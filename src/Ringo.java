@@ -85,7 +85,7 @@ public class Ringo {
         Scanner scan = new Scanner(System.in);
 
         while (true) {
-
+            //TODO: Put in thread, put ping requests in new thread.
             try {
                 byte[] date = new byte[1024];
                 DatagramPacket recieve = new DatagramPacket(date, date.length, InetAddress.getLocalHost(), PORT_NUMBER);
@@ -100,6 +100,8 @@ public class Ringo {
                 long ret = now.getTime();
                 long ONEWAYTRIP = ret - timeStamp;
                 byte[] RTT = ("" + (ONEWAYTRIP * 2)).getBytes();
+
+                //TODO: Incorporate port number in byte array to forward.
                 DatagramPacket send = new DatagramPacket(RTT, 2, InetAddress.getLocalHost(), 10292);
                 ds.send(send);
                 System.out.println("Sent Packet!");
