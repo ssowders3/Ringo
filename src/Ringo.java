@@ -17,6 +17,9 @@ public class Ringo {
 
     public static final int PACKET_SIZE = 65535;
     public static boolean isFirst = false;
+    public static int ringosOnline;
+
+    public static int RINGOID;
 
     public static String IP_ADDR; //TODO: Change from Local
 
@@ -26,7 +29,7 @@ public class Ringo {
 
     public static DatagramSocket ds;
 
-
+    public static Map<String, Integer> knownRingos;
 
     public static String cmdError = "There was an error in your command line arguments. Try again.";
 
@@ -41,71 +44,81 @@ public class Ringo {
         <PoC-port>: the UDP port number of the PoC for this Ringo. Set to 0 if this Ringo does not have a PoC.
         <N>: the total number of Ringos (when they are all active).
          */
-
         parseCmd(args);
-        System.out.println("******************************");
-        System.out.println("*Ringo successfully initialized.");
-        if (flag.equals("S")) {
-            System.out.println("*This Ringo was designated as a Sender.");
-        } else if (flag.equals("R")) {
-            System.out.println("*This Ringo was designated as a Reciever");
-        } else if (flag.equals("F")) {
-            System.out.println("*This Ringo was designated as a Forwarder.");
-        } else {
-            System.out.println(cmdError);
-            System.exit(-1);
-        }
-        System.out.println("*This Ringo has a socket at port " + PORT_NUMBER + ".");
-        System.out.println("*The total number of Ringos is " + n + ".");
+        printStats();
 
-        if (POC_NAME.equals("0")) {
-            System.out.println("This is the first Ringo online!");
-            isFirst = true;
-        } else {
-            System.out.println("*The host name of the Point of Contact is " + POC_NAME + " @ " + POC_PORT);
-        }
-        System.out.println("****************************");
+        knownRingos = new HashMap<String, Integer>();
 
         try {
-            ds = new DatagramSocket(PORT_NUMBER);
+            ds = new DatagramSocket(PORT_NUMBER); //Opens UDP Socket at PORT_NUMBER;
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-
-
         if (!isFirst) {
-            getPingFromPOC();
+            getPingFromPOC(); //IF THERE EXISTS A POC, PING IT.
+        } else {
+            ringosOnline = 1;
+            System.out.println("There is now 1 Ringo Online.");
         }
 
         initializeVector();
         initializeMatrix();
 
+        Thread checkForPings = new Thread() {
+            public void run() {
+                while (true) {
+                    try {
+                        byte[] date = new byte[1024];
 
-        Scanner scan = new Scanner(System.in);
+                        DatagramPacket recieve =
+                                new DatagramPacket(date, date.length, InetAddress.getLocalHost(), PORT_NUMBER);
+                        ds.receive(recieve);
+
+                        System.out.println("\n****************");
+                        System.out.println("New Ringo Online!");
+
+                        String packetData = new String(date);
+
+                        System.out.println("Ping Packet Contained Info: " + new String(date));
+
+                        StringTokenizer token = new StringTokenizer(packetData);
+
+                        long timeStamp = Long.valueOf(token.nextToken());
+                        int senderPort = Integer.valueOf(token.nextToken().trim());
+
+                        Date now = new Date();
+                        long ret = now.getTime();
+                        long ONEWAYTRIP = ret;
+
+                        ringosOnline += 1;
+
+                        String sending = ("" + (ONEWAYTRIP * 2) + " " + ringosOnline);
+
+                        byte[] RTT = sending.getBytes();
+
+                        DatagramPacket send = new DatagramPacket(RTT, 15, InetAddress.getLocalHost(), senderPort);
+                        ds.send(send);
+                        System.out.println("Sent Packet! (" + sending + ")");
+                        System.out.println("*****************");
+
+                        exchangeKnownRingos();
+
+                        System.out.print("Ringo Command: ");
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        };
+
+        checkForPings.start();
 
         while (true) {
 
-            try {
-                byte[] date = new byte[1024];
-                DatagramPacket recieve = new DatagramPacket(date, date.length, InetAddress.getLocalHost(), PORT_NUMBER);
-                ds.receive(recieve);
-                System.out.println("Recieved Packet!");
-                long timeStamp = 0;
-                for (int i = 0; i < date.length; i++)
-                {
-                    timeStamp = (timeStamp << 8) + (date[i] & 0xff);
-                }
-                Date now = new Date();
-                long ret = now.getTime();
-                long ONEWAYTRIP = ret - timeStamp;
-                byte[] RTT = ("" + (ONEWAYTRIP * 2)).getBytes();
-                DatagramPacket send = new DatagramPacket(RTT, 2, InetAddress.getLocalHost(), 10292);
-                ds.send(send);
-                System.out.println("Sent Packet!");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            Scanner scan = new Scanner(System.in);
 
             System.out.print("Ringo command: ");
             StringTokenizer token = new StringTokenizer(scan.nextLine());
@@ -129,12 +142,15 @@ public class Ringo {
             } else if (command.equals("disconnect")) {
                 System.out.println("Exiting...");
                 System.exit(-1);
+            } else if (command.equals("show-ringos")) {
+                System.out.println(knownRingos.toString());
             } else {
                 System.out.println("Command Not Recognized. Valid commands include: \n");
                 System.out.println("offline <seconds>");
                 System.out.println("send <filename>");
                 System.out.println("show-matrix");
                 System.out.println("show-ring");
+                System.out.println("show-ringos");
                 System.out.println("disconnect \n");
             }
         }
@@ -154,39 +170,68 @@ public class Ringo {
     public static void initializeMatrix() {
         matrix = new int[n][n];
         matrix[0] = vector;
+        matrix[1] = vector; //Replace with vector from Ringo 2...
     }
 
     public static void getPingFromPOC() {
-        System.out.println("GETTING PING FROM POC");
-
+        System.out.println("Obtaining Ping From the Point of Contact");
         Date now = new Date();
         long msSend = now.getTime();
-        byte[] buf = new byte[1024];
-        String ms = msSend + "";
-        buf = ms.getBytes();
-        try {
 
+        String ms = msSend + " " + PORT_NUMBER;
+        byte[] buf = ms.getBytes();
+
+        try {
             InetAddress poc = InetAddress.getByName(POC_NAME);
             DatagramPacket packet = new DatagramPacket(buf, buf.length, poc, POC_PORT);
             try {
                 ds.send(packet);
-                DatagramPacket recieve = new DatagramPacket(new byte[2], 2);
+                DatagramPacket recieve = new DatagramPacket(new byte[15], 15);
                 ds.receive(recieve);
 
+                String ping = new String(recieve.getData());
+                StringTokenizer token = new StringTokenizer(ping);
 
-                System.out.println("Ping estimated at : " + new String(recieve.getData()) + " ms.");
+                System.out.println("Ping estimated at : " + token.nextToken() + " ms.");
+                System.out.println("There are now " + token.nextToken() + " Ringos online.");
+                System.out.println("This Ringo has been assigned RINGOID: " + ringosOnline);
+                RINGOID = ringosOnline;
             } catch (IOException e){
                 e.printStackTrace();
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
-    public void pointOfContact() {
-        //TODO: Attach this Ringo to any other Ringos in the network.
-        //TODO: Obtain list of all other Ringos in the network.
+
+    public static void printStats() {
+        System.out.println("******************************");
+        if (flag.equals("S")) {
+            System.out.println("*This Ringo was designated as a Sender.");
+        } else if (flag.equals("R")) {
+            System.out.println("*This Ringo was designated as a Reciever");
+        } else if (flag.equals("F")) {
+            System.out.println("*This Ringo was designated as a Forwarder.");
+        } else {
+            System.out.println(cmdError);
+            System.exit(-1);
+        }
+        System.out.println("*This Ringo has a socket at port " + PORT_NUMBER + ".");
+        System.out.println("*The total number of Ringos is " + n + ".");
+
+        if (POC_NAME.equals("0")) {
+            System.out.println("This is the first Ringo online!");
+            isFirst = true;
+        } else {
+            System.out.println("*The host name of the Point of Contact is " + POC_NAME + " @ " + POC_PORT);
+
+        }
+
+        System.out.println("*Ringo successfully initialized.");
+        System.out.println("****************************");
+    }
+    public static void exchangeKnownRingos(){
+        //TODO: After the POC Ringo sends the Ping Packet back to the new Ringo, send the RTT to the new Ringo.
     }
 
     public void sendDummy() {
