@@ -48,7 +48,7 @@ public class Ringo {
         if (flag.equals("S")) {
             System.out.println("*This Ringo was designated as a Sender.");
         } else if (flag.equals("R")) {
-            System.out.println("*This Ringo was designated as a Reciever");
+            System.out.println("*This Ringo was designated as a Receiver");
         } else if (flag.equals("F")) {
             System.out.println("*This Ringo was designated as a Forwarder.");
         } else {
@@ -71,8 +71,6 @@ public class Ringo {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
 
         if (!isFirst) {
             getPingFromPOC();
@@ -161,28 +159,27 @@ public class Ringo {
     public static void getPingFromPOC() {
         System.out.println("GETTING PING FROM POC");
 
+        //get send time and add into byte array
         Date now = new Date();
         long msSend = now.getTime();
         byte[] buf = new byte[1024];
         String ms = msSend + "";
         buf = ms.getBytes();
         try {
-
             InetAddress poc = InetAddress.getByName(POC_NAME);
             DatagramPacket packet = new DatagramPacket(buf, buf.length, poc, POC_PORT);
             try {
                 ds.send(packet);
-                DatagramPacket recieve = new DatagramPacket(new byte[2], 2);
-                ds.receive(recieve);
-
-
-                System.out.println("Ping estimated at : " + new String(recieve.getData()) + " ms.");
+                DatagramPacket receive = new DatagramPacket(new byte[2], 2);
+                ds.receive(receive);
+                System.out.println("Ping estimated at : " + new String(receive.getData()) + " ms.");
             } catch (IOException e){
                 e.printStackTrace();
+                System.out.println("Unable to initialize packet or address");
             }
-
         } catch (Exception e) {
             e.printStackTrace();
+            System.out.println("Unable to send or receive packet");
         }
 
     }
