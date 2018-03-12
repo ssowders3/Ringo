@@ -176,9 +176,7 @@ public class Ringo {
     public static void getPingFromPOC() {
         System.out.println("Obtaining Ping From the Point of Contact");
         Date now = new Date();
-        System.out.println("date " + now);
         long msSend = now.getTime();
-        System.out.println("msSend " + msSend);
 
         String ms = msSend + " " + PORT_NUMBER;
         byte[] buf = ms.getBytes();
@@ -205,10 +203,10 @@ public class Ringo {
                         break;
                     }
                 } catch (IOException e){
-                    e.printStackTrace();
                     System.out.println("Sending failed trying again");
                     if (try_count == 3) {
                         System.out.println("Failed to send closing socket");
+                        e.printStackTrace();
                         System.exit(1);
                     }
                 }
