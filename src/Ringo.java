@@ -51,6 +51,7 @@ public class Ringo {
 
         try {
             ds = new DatagramSocket(PORT_NUMBER); //Opens UDP Socket at PORT_NUMBER;
+            ds.setSoTimeout(60000);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -73,7 +74,7 @@ public class Ringo {
 
                         DatagramPacket recieve =
                                 new DatagramPacket(date, date.length, InetAddress.getLocalHost(), PORT_NUMBER);
-                        ds.receive(recieve); //do we need a timeout on this?
+                        ds.receive(recieve);
 
                         System.out.println("\n****************");
                         System.out.println("New Ringo Online!");
@@ -185,12 +186,11 @@ public class Ringo {
             InetAddress poc = InetAddress.getByName(POC_NAME);
             DatagramPacket packet = new DatagramPacket(buf, buf.length, poc, POC_PORT);
             int try_count = 0;
-            ds.send(packet);
-            ds.setSoTimeout(1000);
             while (true) {
                 try {
                     if (try_count < 3) {
                         try_count = try_count + 1;
+                        ds.send(packet);
                         DatagramPacket recieve = new DatagramPacket(new byte[15], 15);
                         ds.receive(recieve);
                         System.out.println("Packet recieved");
