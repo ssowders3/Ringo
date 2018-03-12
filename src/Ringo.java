@@ -73,7 +73,7 @@ public class Ringo {
 
                         DatagramPacket recieve =
                                 new DatagramPacket(date, date.length, InetAddress.getLocalHost(), PORT_NUMBER);
-                        ds.receive(recieve);
+                        ds.receive(recieve); //do we need a timeout on this?
 
                         System.out.println("\n****************");
                         System.out.println("New Ringo Online!");
@@ -176,7 +176,9 @@ public class Ringo {
     public static void getPingFromPOC() {
         System.out.println("Obtaining Ping From the Point of Contact");
         Date now = new Date();
+        System.out.println("date " + now);
         long msSend = now.getTime();
+        System.out.println("msSend " + msSend);
 
         String ms = msSend + " " + PORT_NUMBER;
         byte[] buf = ms.getBytes();
@@ -184,20 +186,32 @@ public class Ringo {
         try {
             InetAddress poc = InetAddress.getByName(POC_NAME);
             DatagramPacket packet = new DatagramPacket(buf, buf.length, poc, POC_PORT);
-            try {
-                ds.send(packet);
-                DatagramPacket recieve = new DatagramPacket(new byte[15], 15);
-                ds.receive(recieve);
-
-                String ping = new String(recieve.getData());
-                StringTokenizer token = new StringTokenizer(ping);
-
-                System.out.println("Ping estimated at : " + token.nextToken() + " ms.");
-                System.out.println("There are now " + token.nextToken() + " Ringos online.");
-                System.out.println("This Ringo has been assigned RINGOID: " + ringosOnline);
-                RINGOID = ringosOnline;
-            } catch (IOException e){
-                e.printStackTrace();
+            int try_count = 0;
+            ds.send(packet);
+            ds.setSoTimeout(1000);
+            while (true) {
+                try {
+                    if (try_count < 3) {
+                        try_count = try_count + 1;
+                        DatagramPacket recieve = new DatagramPacket(new byte[15], 15);
+                        ds.receive(recieve);
+                        System.out.println("Packet recieved");
+                        String ping = new String(recieve.getData());
+                        StringTokenizer token = new StringTokenizer(ping);
+                        System.out.println("Ping estimated at : " + token.nextToken() + " ms.");
+                        System.out.println("There are now " + token.nextToken() + " Ringos online.");
+                        System.out.println("This Ringo has been assigned RINGOID: " + ringosOnline);
+                        RINGOID = ringosOnline;
+                        break;
+                    }
+                } catch (IOException e){
+                    e.printStackTrace();
+                    System.out.println("Sending failed trying again");
+                    if (try_count == 3) {
+                        System.out.println("Failed to send closing socket");
+                        System.exit(1);
+                    }
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
