@@ -51,7 +51,7 @@ public class Ringo {
 
         try {
             ds = new DatagramSocket(PORT_NUMBER); //Opens UDP Socket at PORT_NUMBER;
-            ds.setSoTimeout(60000);
+            ds.setSoTimeout(120000); //setting time out to two minutes
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -195,6 +195,8 @@ public class Ringo {
                         try_count = try_count + 1;
                         ds.send(packet);
                         DatagramPacket recieve = new DatagramPacket(new byte[15], 15);
+                        //If POC is not initialized ds.receive will freeze until socket times out
+                        //need to determine whether this is a big issue
                         ds.receive(recieve);
                         System.out.println("Packet recieved");
                         String ping = new String(recieve.getData());
