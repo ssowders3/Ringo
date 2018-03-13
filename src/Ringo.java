@@ -13,11 +13,14 @@ public class Ringo {
     public static String flag;
     public static int PORT_NUMBER;
     public static String POC_NAME;
+
     public static int POC_PORT;
+
+    public static int PING_PORT;
 
     public static final int PACKET_SIZE = 65535;
     public static boolean isFirst = false;
-    public static int ringosOnline;
+    public static int ringosOnline = 0;
 
     public static int RINGOID;
 
@@ -28,8 +31,9 @@ public class Ringo {
     public static int[][] matrix;
 
     public static DatagramSocket ds;
+    public static DatagramSocket ping;
 
-    public static Map<String, Integer> knownRingos;
+    public static Map<Integer, Integer> knownRingos;
 
     public static String cmdError = "There was an error in your command line arguments. Try again.";
 
@@ -45,20 +49,25 @@ public class Ringo {
         <N>: the total number of Ringos (when they are all active).
          */
         parseCmd(args);
+        PING_PORT = PORT_NUMBER + 1;
         printStats();
 
-        knownRingos = new HashMap<String, Integer>();
+        knownRingos = new HashMap<Integer, Integer>();
 
         try {
-            ds = new DatagramSocket(PORT_NUMBER); //Opens UDP Socket at PORT_NUMBER;
+            ds = new DatagramSocket(PORT_NUMBER);
+            ping = new DatagramSocket(PING_PORT);//Opens UDP Socket at PORT_NUMBER;
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
 
         if (!isFirst) {
             getPingFromPOC(); //IF THERE EXISTS A POC, PING IT.
         } else {
             ringosOnline = 1;
+            RINGOID = ringosOnline;
             System.out.println("There is now 1 Ringo Online.");
         }
 
@@ -72,8 +81,8 @@ public class Ringo {
                         byte[] date = new byte[1024];
 
                         DatagramPacket recieve =
-                                new DatagramPacket(date, date.length, InetAddress.getLocalHost(), PORT_NUMBER);
-                        ds.receive(recieve);
+                                new DatagramPacket(date, date.length, InetAddress.getLocalHost(), PING_PORT);
+                        ping.receive(recieve);
 
                         System.out.println("\n****************");
                         System.out.println("New Ringo Online!");
@@ -98,11 +107,18 @@ public class Ringo {
                         byte[] RTT = sending.getBytes();
 
                         DatagramPacket send = new DatagramPacket(RTT, 15, InetAddress.getLocalHost(), senderPort);
-                        ds.send(send);
+                        ping.send(send);
                         System.out.println("Sent Packet! (" + sending + ")");
                         System.out.println("*****************");
 
-                        exchangeKnownRingos();
+                        knownRingos.put(ringosOnline, senderPort);
+                        System.out.println("known ringos + " + knownRingos);
+
+                        if (ringosOnline >= 1) {
+                            System.out.println("SENDER PORT " + senderPort);
+                            exchangeKnownRingos(InetAddress.getLocalHost(), senderPort);
+                        }
+
 
                         System.out.print("Ringo Command: ");
 
@@ -110,7 +126,6 @@ public class Ringo {
                         e.printStackTrace();
                     }
                 }
-
             }
         };
 
@@ -119,6 +134,7 @@ public class Ringo {
         while (true) {
 
             Scanner scan = new Scanner(System.in);
+            System.out.println("known ringos + "+  knownRingos);
 
             System.out.print("Ringo command: ");
             StringTokenizer token = new StringTokenizer(scan.nextLine());
@@ -178,24 +194,26 @@ public class Ringo {
         Date now = new Date();
         long msSend = now.getTime();
 
-        String ms = msSend + " " + PORT_NUMBER;
+        String ms = msSend + " " + PING_PORT;
         byte[] buf = ms.getBytes();
 
         try {
             InetAddress poc = InetAddress.getByName(POC_NAME);
-            DatagramPacket packet = new DatagramPacket(buf, buf.length, poc, POC_PORT);
+            DatagramPacket packet = new DatagramPacket(buf, buf.length, poc, PING_PORT);
             try {
-                ds.send(packet);
+                ping.send(packet);
                 DatagramPacket recieve = new DatagramPacket(new byte[15], 15);
-                ds.receive(recieve);
+                ping.receive(recieve);
 
                 String ping = new String(recieve.getData());
                 StringTokenizer token = new StringTokenizer(ping);
-
-                System.out.println("Ping estimated at : " + token.nextToken() + " ms.");
-                System.out.println("There are now " + token.nextToken() + " Ringos online.");
+                long pingTime = Long.parseLong(token.nextToken());
+                System.out.println("Ping estimated at : " + pingTime + " ms.");
+                ringosOnline = Integer.parseInt(token.nextToken());
+                System.out.println("There are now " + ringosOnline + " Ringos online.");
                 System.out.println("This Ringo has been assigned RINGOID: " + ringosOnline);
                 RINGOID = ringosOnline;
+                knownRingos.put(ringosOnline - 1, POC_PORT);
             } catch (IOException e){
                 e.printStackTrace();
             }
@@ -217,6 +235,7 @@ public class Ringo {
             System.exit(-1);
         }
         System.out.println("*This Ringo has a socket at port " + PORT_NUMBER + ".");
+        System.out.println("*This Ringo has a ping port at " + PING_PORT);
         System.out.println("*The total number of Ringos is " + n + ".");
 
         if (POC_NAME.equals("0")) {
@@ -230,9 +249,47 @@ public class Ringo {
         System.out.println("*Ringo successfully initialized.");
         System.out.println("****************************");
     }
-    public static void exchangeKnownRingos(){
+    public static void exchangeKnownRingos(InetAddress ipAddr, int portNum){
         //TODO: After the POC Ringo sends the Ping Packet back to the new Ringo, send the RTT to the new Ringo.
+        System.out.println("Exchanging Ringo @" + ipAddr.getHostName() + ": " + portNum);
+        try {
+            System.out.println("my known ringos " + knownRingos);
+                int i = 0;
+                for (Map.Entry<Integer, Integer> entry : knownRingos.entrySet()) {
+                    System.out.println("ITERATION : " + i);
+                    Integer key = entry.getKey();
+                    Integer value = entry.getValue();
+                    String keyValue = ("" + key + " " + value);
+                    byte[] ringMap = keyValue.getBytes();
+                    DatagramPacket mapPacket =
+                            new DatagramPacket(ringMap, ringMap.length, ipAddr, portNum);
+                    System.out.println("Sending to ip " + ipAddr + " and port " + portNum);
+                    ds.send(mapPacket);
+                    i++;
+                    if (i==n) {
+                        break;
+                    }
+                }
+
+                DatagramPacket receive = new DatagramPacket(new byte[20], 20);
+                ds.receive(receive);
+
+                System.out.println("RECIEVED PACKET");
+                System.out.println("PACKET CONTAINED: " + receive.getData().toString());
+
+                String mapData = new String(receive.getData());
+                StringTokenizer token = new StringTokenizer(mapData);
+                int ringoID = Integer.valueOf(token.nextToken());
+                System.out.println("ringoId is " + ringoID);
+                int ringoNodePort = Integer.valueOf(token.nextToken().trim());
+                System.out.println("ringo node port number is " + ringoNodePort);
+                knownRingos.put(ringoID, ringoNodePort);
+                System.out.println("known ringos after exchange " + knownRingos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
 
     public void sendDummy() {
         //TODO: Send a dummy packet to other Ringos in the network to see if they are alive.
