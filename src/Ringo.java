@@ -13,10 +13,7 @@ public class Ringo {
     public static String flag;
     public static int PORT_NUMBER;
     public static String POC_NAME;
-
     public static int POC_PORT;
-
-    public static int PING_PORT;
 
     public static final int PACKET_SIZE = 65535;
     public static boolean isFirst = false;
@@ -26,12 +23,13 @@ public class Ringo {
 
     public static String IP_ADDR; //TODO: Change from Local
 
+    public static Thread checkForPings;
+
 
     public static int[] vector;
     public static int[][] matrix;
 
     public static DatagramSocket ds;
-    public static DatagramSocket ping;
 
     public static Map<Integer, Integer> knownRingos;
 
@@ -49,19 +47,15 @@ public class Ringo {
         <N>: the total number of Ringos (when they are all active).
          */
         parseCmd(args);
-        PING_PORT = PORT_NUMBER + 1;
         printStats();
 
         knownRingos = new HashMap<Integer, Integer>();
 
         try {
-            ds = new DatagramSocket(PORT_NUMBER);
-            ping = new DatagramSocket(PING_PORT);//Opens UDP Socket at PORT_NUMBER;
+            ds = new DatagramSocket(PORT_NUMBER); //Opens UDP Socket at PORT_NUMBER;
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
 
         if (!isFirst) {
             getPingFromPOC(); //IF THERE EXISTS A POC, PING IT.
@@ -74,15 +68,14 @@ public class Ringo {
         initializeVector();
         initializeMatrix();
 
-        Thread checkForPings = new Thread() {
+        checkForPings = new Thread() {
             public void run() {
-                while (true) {
                     try {
                         byte[] date = new byte[1024];
 
                         DatagramPacket recieve =
-                                new DatagramPacket(date, date.length, InetAddress.getLocalHost(), PING_PORT);
-                        ping.receive(recieve);
+                                new DatagramPacket(date, date.length, InetAddress.getLocalHost(), PORT_NUMBER);
+                        ds.receive(recieve);
 
                         System.out.println("\n****************");
                         System.out.println("New Ringo Online!");
@@ -107,18 +100,15 @@ public class Ringo {
                         byte[] RTT = sending.getBytes();
 
                         DatagramPacket send = new DatagramPacket(RTT, 15, InetAddress.getLocalHost(), senderPort);
-                        ping.send(send);
+                        ds.send(send);
                         System.out.println("Sent Packet! (" + sending + ")");
                         System.out.println("*****************");
 
                         knownRingos.put(ringosOnline, senderPort);
-                        System.out.println("known ringos + " + knownRingos);
+                        System.out.println("known ringos + "+  knownRingos);
 
-                        if (ringosOnline >= 1) {
                             System.out.println("SENDER PORT " + senderPort);
                             exchangeKnownRingos(InetAddress.getLocalHost(), senderPort);
-                        }
-
 
                         System.out.print("Ringo Command: ");
 
@@ -126,7 +116,6 @@ public class Ringo {
                         e.printStackTrace();
                     }
                 }
-            }
         };
 
         checkForPings.start();
@@ -194,16 +183,16 @@ public class Ringo {
         Date now = new Date();
         long msSend = now.getTime();
 
-        String ms = msSend + " " + PING_PORT;
+        String ms = msSend + " " + PORT_NUMBER;
         byte[] buf = ms.getBytes();
 
         try {
             InetAddress poc = InetAddress.getByName(POC_NAME);
-            DatagramPacket packet = new DatagramPacket(buf, buf.length, poc, PING_PORT);
+            DatagramPacket packet = new DatagramPacket(buf, buf.length, poc, POC_PORT);
             try {
-                ping.send(packet);
+                ds.send(packet);
                 DatagramPacket recieve = new DatagramPacket(new byte[15], 15);
-                ping.receive(recieve);
+                ds.receive(recieve);
 
                 String ping = new String(recieve.getData());
                 StringTokenizer token = new StringTokenizer(ping);
@@ -235,7 +224,6 @@ public class Ringo {
             System.exit(-1);
         }
         System.out.println("*This Ringo has a socket at port " + PORT_NUMBER + ".");
-        System.out.println("*This Ringo has a ping port at " + PING_PORT);
         System.out.println("*The total number of Ringos is " + n + ".");
 
         if (POC_NAME.equals("0")) {
@@ -253,6 +241,12 @@ public class Ringo {
         //TODO: After the POC Ringo sends the Ping Packet back to the new Ringo, send the RTT to the new Ringo.
         System.out.println("Exchanging Ringo @" + ipAddr.getHostName() + ": " + portNum);
         try {
+            checkForPings.wait();
+        } catch (Exception e){
+            //
+        }
+
+        try {
             System.out.println("my known ringos " + knownRingos);
                 int i = 0;
                 for (Map.Entry<Integer, Integer> entry : knownRingos.entrySet()) {
@@ -267,7 +261,9 @@ public class Ringo {
                     ds.send(mapPacket);
                     i++;
                     if (i==n) {
+                        checkForPings.notify();
                         break;
+
                     }
                 }
 
@@ -288,6 +284,8 @@ public class Ringo {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
     }
 
 
