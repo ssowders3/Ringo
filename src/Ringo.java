@@ -68,7 +68,7 @@ public class Ringo {
 
         Thread checkForPings = new Thread() {
             public void run() {
-                while (true) {
+                for (int i = 0; i < n; i++) {
                     try {
                         byte[] date = new byte[1024];
 
@@ -109,6 +109,9 @@ public class Ringo {
 
                     } catch (Exception e) {
                         e.printStackTrace();
+                        System.out.println("Socket timed out, closing socket");
+                        ds.close();
+                        System.exit(1);
                     }
                 }
 
