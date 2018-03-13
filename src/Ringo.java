@@ -3,9 +3,6 @@ import java.io.IOException;
 import java.net.*;
 import java.util.*;
 
-/**
- * Created by Katie on 2/27/18.
- */
 public class Ringo {
 
 
@@ -24,8 +21,8 @@ public class Ringo {
     public static String IP_ADDR; //TODO: Change from Local
 
 
-    public static int[] vector;
-    public static int[][] matrix;
+    public static long[] vector;
+    public static long[][] matrix;
 
     public static DatagramSocket ds;
 
@@ -55,15 +52,14 @@ public class Ringo {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        long roundTrip = 0;
         if (!isFirst) {
-            getPingFromPOC(); //IF THERE EXISTS A POC, PING IT.
+            roundTrip = getPingFromPOC(); //IF THERE EXISTS A POC, PING IT.
         } else {
             ringosOnline = 1;
             System.out.println("There is now 1 Ringo Online.");
         }
-
-        initializeVector();
+        initializeVector(roundTrip);
         initializeMatrix();
 
         Thread checkForPings = new Thread() {
@@ -99,6 +95,7 @@ public class Ringo {
                         byte[] RTT = sending.getBytes();
 
                         DatagramPacket send = new DatagramPacket(RTT, 15, InetAddress.getLocalHost(), senderPort);
+                        //why is the second arg 15
                         ds.send(send);
                         System.out.println("Sent Packet! (" + sending + ")");
                         System.out.println("*****************");
@@ -163,8 +160,8 @@ public class Ringo {
         //TODO: Initialize RTT Vector.
     }
 
-    public static void initializeVector() {
-        vector = new int[n];
+    public static void initializeVector(long roundTrip) {
+        vector = new long[n];
         //dummy data;
         for (int i = 0; i < n; i++) {
             vector[i] = i;
@@ -172,12 +169,12 @@ public class Ringo {
     }
 
     public static void initializeMatrix() {
-        matrix = new int[n][n];
+        matrix = new long[n][n];
         matrix[0] = vector;
         matrix[1] = vector; //Replace with vector from Ringo 2...
     }
 
-    public static void getPingFromPOC() {
+    public static long getPingFromPOC() {
         System.out.println("Obtaining Ping From the Point of Contact");
         Date now = new Date();
         long msSend = now.getTime();
@@ -201,11 +198,12 @@ public class Ringo {
                         System.out.println("Packet recieved");
                         String ping = new String(recieve.getData());
                         StringTokenizer token = new StringTokenizer(ping);
-                        System.out.println("Ping estimated at : " + token.nextToken() + " ms.");
+                        long pingTime = Long.parseLong(token.nextToken());
+                        System.out.println("Ping estimated at : " + pingTime + " ms.");
                         System.out.println("There are now " + token.nextToken() + " Ringos online.");
                         System.out.println("This Ringo has been assigned RINGOID: " + ringosOnline);
                         RINGOID = ringosOnline;
-                        break;
+                        return pingTime;
                     }
                 } catch (IOException e){
                     System.out.println("Sending failed trying again");
@@ -219,6 +217,7 @@ public class Ringo {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return 0;
     }
 
     public static void printStats() {
