@@ -171,7 +171,7 @@ public class Ringo {
                             String ip = ra.getIP(); //IP ADDR OF RINGO
                             Integer port = entry.getValue(); //PORT OF RINGO
                             //don't send to yourself
-                            if (port == PORT_NUMBER || port == POC_PORT) {
+                            if (port == PORT_NUMBER) {
                                 num_iters++;
                                 continue;
                             }
