@@ -156,8 +156,8 @@ public class Ringo {
                     }
 
                     //KATIE
-//                    System.out.println("My ringos online " + ringosOnline);
-                    if ((!args[2].equals("0") && ringosOnline == n) || args[2].equals("0")) {
+                    System.out.println("My ringos online " + knownRingos.size());
+                    if (knownRingos.size() == n) {
                         //System.out.println("sending RTTs for matrix");
                         for (Map.Entry<ringoAddr, Integer> entry : knownRingos.entrySet()) {
                             if (num_iters >= n) {

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="76959ff3-a3e7-4659-8615-09191dc1d1ed" name="Default" comment="Changed send so it does not send to yourself or your POC, TODO get initial ringo to send correctly">
+    <list default="true" id="76959ff3-a3e7-4659-8615-09191dc1d1ed" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Ringo/Ringo$1.class" afterPath="$PROJECT_DIR$/out/production/Ringo/Ringo$1.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Ringo/Ringo.class" afterPath="$PROJECT_DIR$/out/production/Ringo/Ringo.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Ringo$1.class" afterPath="$PROJECT_DIR$/src/Ringo$1.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Ringo$ringoAddr.class" afterPath="$PROJECT_DIR$/src/Ringo$ringoAddr.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Ringo.class" afterPath="$PROJECT_DIR$/src/Ringo.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Ringo.java" afterPath="$PROJECT_DIR$/src/Ringo.java" />
@@ -32,12 +31,12 @@
       <file leaf-file-name="Ringo.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Ringo.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="320">
-              <caret line="174" column="76" selection-start-line="174" selection-start-column="76" selection-end-line="174" selection-end-column="76" />
+            <state relative-caret-position="365">
+              <caret line="158" column="79" selection-start-line="158" selection-start-column="79" selection-end-line="158" selection-end-column="79" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#2811#8308#0" expanded="true" />
-                <element signature="e#8307#8308#0" expanded="true" />
+                <element signature="e#2811#8269#0" expanded="true" />
+                <element signature="e#8268#8269#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -469,7 +468,14 @@
       <option name="project" value="LOCAL" />
       <updated>1521040788671</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Changed if statement so it checks for ringosOnline == n or if its the initial ringo, TODO get initial ringo to send correctly">
+      <created>1521042634755</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1521042634756</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -520,7 +526,8 @@
     <MESSAGE value="Initial version with working send, TODO receive correctly on each port" />
     <MESSAGE value="Changed send so it does not send to yourself or your POC, TODO receive on each node correctly" />
     <MESSAGE value="Changed send so it does not send to yourself or your POC, TODO get initial ringo to send correctly" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed send so it does not send to yourself or your POC, TODO get initial ringo to send correctly" />
+    <MESSAGE value="Changed if statement so it checks for ringosOnline == n or if its the initial ringo, TODO get initial ringo to send correctly" />
+    <option name="LAST_COMMIT_MESSAGE" value="Changed if statement so it checks for ringosOnline == n or if its the initial ringo, TODO get initial ringo to send correctly" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -539,8 +546,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#2811#8308#0" expanded="true" />
-            <element signature="e#8307#8308#0" expanded="true" />
+            <element signature="e#2811#8269#0" expanded="true" />
+            <element signature="e#8268#8269#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -551,8 +558,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#2811#8308#0" expanded="true" />
-            <element signature="e#8307#8308#0" expanded="true" />
+            <element signature="e#2811#8269#0" expanded="true" />
+            <element signature="e#8268#8269#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -563,8 +570,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#2811#8308#0" expanded="true" />
-            <element signature="e#8307#8308#0" expanded="true" />
+            <element signature="e#2811#8269#0" expanded="true" />
+            <element signature="e#8268#8269#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -575,8 +582,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#2811#8308#0" expanded="true" />
-            <element signature="e#8307#8308#0" expanded="true" />
+            <element signature="e#2811#8269#0" expanded="true" />
+            <element signature="e#8268#8269#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -587,8 +594,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#2811#8308#0" expanded="true" />
-            <element signature="e#8307#8308#0" expanded="true" />
+            <element signature="e#2811#8269#0" expanded="true" />
+            <element signature="e#8268#8269#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -599,8 +606,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#2811#8308#0" expanded="true" />
-            <element signature="e#8307#8308#0" expanded="true" />
+            <element signature="e#2811#8269#0" expanded="true" />
+            <element signature="e#8268#8269#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -611,8 +618,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#2811#8308#0" expanded="true" />
-            <element signature="e#8307#8308#0" expanded="true" />
+            <element signature="e#2811#8269#0" expanded="true" />
+            <element signature="e#8268#8269#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -630,8 +637,8 @@
           <caret line="302" column="22" selection-start-line="302" selection-start-column="22" selection-end-line="302" selection-end-column="22" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#2811#8308#0" expanded="true" />
-            <element signature="e#8307#8308#0" expanded="true" />
+            <element signature="e#2811#8269#0" expanded="true" />
+            <element signature="e#8268#8269#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -642,8 +649,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#2811#8308#0" expanded="true" />
-            <element signature="e#8307#8308#0" expanded="true" />
+            <element signature="e#2811#8269#0" expanded="true" />
+            <element signature="e#8268#8269#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -654,8 +661,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#2811#8308#0" expanded="true" />
-            <element signature="e#8307#8308#0" expanded="true" />
+            <element signature="e#2811#8269#0" expanded="true" />
+            <element signature="e#8268#8269#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -666,8 +673,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#2811#8308#0" expanded="true" />
-            <element signature="e#8307#8308#0" expanded="true" />
+            <element signature="e#2811#8269#0" expanded="true" />
+            <element signature="e#8268#8269#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -678,8 +685,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#2811#8308#0" expanded="true" />
-            <element signature="e#8307#8308#0" expanded="true" />
+            <element signature="e#2811#8269#0" expanded="true" />
+            <element signature="e#8268#8269#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -690,8 +697,8 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#2811#8308#0" expanded="true" />
-            <element signature="e#8307#8308#0" expanded="true" />
+            <element signature="e#2811#8269#0" expanded="true" />
+            <element signature="e#8268#8269#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -705,12 +712,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Ringo.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="320">
-          <caret line="174" column="76" selection-start-line="174" selection-start-column="76" selection-end-line="174" selection-end-column="76" />
+        <state relative-caret-position="365">
+          <caret line="158" column="79" selection-start-line="158" selection-start-column="79" selection-end-line="158" selection-end-column="79" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#2811#8308#0" expanded="true" />
-            <element signature="e#8307#8308#0" expanded="true" />
+            <element signature="e#2811#8269#0" expanded="true" />
+            <element signature="e#8268#8269#0" expanded="true" />
           </folding>
         </state>
       </provider>
