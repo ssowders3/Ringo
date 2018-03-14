@@ -18,6 +18,7 @@ public class Ringo {
     public static final int PACKET_SIZE = 65535;
     public static boolean isFirst = false;
     public static int ringosOnline = 0;
+    public static int initialRingoCount = 0;
 
     public static int RINGOID;
     public static boolean calculatedPing;
@@ -88,6 +89,7 @@ public class Ringo {
             sendPingPacket(); //IF THERE EXISTS A POC, PING IT.
         } else {
             ringosOnline = 1;
+            initialRingoCount = 2;
             RINGOID = ringosOnline;
             knownRingos.put(new ringoAddr("127.0.0.1", 0), PORT_NUMBER);
         }
@@ -110,9 +112,6 @@ public class Ringo {
                         String FLAG = token.nextToken().trim();
                         String firstField = token.nextToken().trim();
                         String secondField = token.nextToken().trim();
-//                        if (FLAG != "MR") {
-//                            secondField = token.nextToken().trim();
-//                        }
                         if (FLAG.equals("P")) {
                             System.out.println("\n\nA new Ringo has requested to ping you.");
                             recievePing(firstField, secondField);
@@ -149,7 +148,6 @@ public class Ringo {
                             String port = token.nextToken();
                             System.out.println("timestamp : " + timeStamp + " ipOfSender : " + ipOfSender + " port " + port);
                             System.out.println("REPLY timestamp : " + timeStamp);
-                            calculatedPing = true;
                         }
 
 
@@ -158,11 +156,12 @@ public class Ringo {
                     }
 
                     //KATIE
-                    if (ringosOnline == n && !calculatedPing) {
-                        System.out.println("sending RTTs for matrix");
+//                    System.out.println("My ringos online " + ringosOnline);
+                    if ((!args[2].equals("0") && ringosOnline == n) || args[2].equals("0")) {
+                        //System.out.println("sending RTTs for matrix");
                         for (Map.Entry<ringoAddr, Integer> entry : knownRingos.entrySet()) {
                             if (num_iters >= n) {
-                                System.out.println("BREAKING LOOP");
+                                //System.out.println("BREAKING LOOP");
                                 break;
                             }
                             ringoAddr ra = entry.getKey();
@@ -173,6 +172,7 @@ public class Ringo {
                                 num_iters++;
                                 continue;
                             }
+                            System.out.println("SENDING RINGOS FOR MATRIX");
                             System.out.println(entry.getKey() + entry.getKey().getIP() + " " + entry.getValue());
                             String ping = ip + " " + port;
                             byte[] send = ping.getBytes();
