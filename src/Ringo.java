@@ -109,10 +109,10 @@ public class Ringo {
 
                         String FLAG = token.nextToken().trim();
                         String firstField = token.nextToken().trim();
-                        String secondField = null;
-                        if (FLAG != "MR") {
-                            secondField = token.nextToken().trim();
-                        }
+                        String secondField = token.nextToken().trim();
+//                        if (FLAG != "MR") {
+//                            secondField = token.nextToken().trim();
+//                        }
                         if (FLAG.equals("P")) {
                             System.out.println("\n\nA new Ringo has requested to ping you.");
                             recievePing(firstField, secondField);
@@ -159,12 +159,12 @@ public class Ringo {
 
                     //KATIE
                     if (ringosOnline == n && !calculatedPing) {
-                        if (num_iters >= n) {
-                            System.out.println("BREAKING LOOP");
-                            break;
-                        }
                         System.out.println("sending RTTs for matrix");
                         for (Map.Entry<ringoAddr, Integer> entry : knownRingos.entrySet()) {
+                            if (num_iters >= n) {
+                                System.out.println("BREAKING LOOP");
+                                break;
+                            }
                             ringoAddr ra = entry.getKey();
                             String ip = ra.getIP(); //IP ADDR OF RINGO
                             Integer port = entry.getValue(); //PORT OF RINGO
