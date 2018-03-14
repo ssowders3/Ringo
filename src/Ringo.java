@@ -265,7 +265,9 @@ public class Ringo {
         long RTT = Long.valueOf(pingTime) - cur;
         RTT *= 2;
 
-        knownRingos.put(new ringoAddr("127.0.0.1", ringosOnline), Integer.parseInt(senderPort));
+        if (!(knownRingos.containsValue(Integer.parseInt(senderPort.trim())))) {
+            knownRingos.put(new ringoAddr("127.0.0.1", ringosOnline), Integer.parseInt(senderPort));
+        }
         ringosOnline += 1;
         String ret = "PR " + RTT + " " + ringosOnline;
         byte[] send = ret.getBytes();
@@ -297,7 +299,9 @@ public class Ringo {
                 byte[] ringMap = keyValue.getBytes();
 
                 for (Integer port: knownRingos.values()) {
+
                    //Don't send to itself.
+
                         DatagramPacket mapPacket =
                                 new DatagramPacket(ringMap, ringMap.length, ipAddr, port);
                         ds.send(mapPacket);
@@ -310,8 +314,10 @@ public class Ringo {
     }
     public static void acceptRingos(String ringoIP, String ringoID, String port){
         try {
-            knownRingos.put(new ringoAddr(ringoIP.trim(), Integer.parseInt(port.trim())), Integer.parseInt(ringoID.trim()));
+            if (!(knownRingos.containsValue(Integer.parseInt(ringoID.trim())))) {
+                knownRingos.put(new ringoAddr(ringoIP.trim(), Integer.parseInt(port.trim())), Integer.parseInt(ringoID.trim()));
 
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
