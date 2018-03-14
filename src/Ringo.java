@@ -1,5 +1,3 @@
-import sun.nio.ch.SocketOpts;
-
 import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.net.*;
@@ -23,6 +21,7 @@ public class Ringo {
 
     public static int RINGOID;
     public static boolean calculatedPing;
+    public static int num_iters = 0;
 
     public static String IP_ADDR; //TODO: Change from Local
 
@@ -110,22 +109,24 @@ public class Ringo {
 
                         String FLAG = token.nextToken().trim();
                         String firstField = token.nextToken().trim();
-                        String secondField = token.nextToken().trim();
-
+                        String secondField = null;
+                        if (FLAG != "MR") {
+                            secondField = token.nextToken().trim();
+                        }
                         if (FLAG.equals("P")) {
-                            //System.out.println("\n\nA new Ringo has requested to ping you.");
+                            System.out.println("\n\nA new Ringo has requested to ping you.");
                             recievePing(firstField, secondField);
                         } else if (FLAG.equals("E")) {
                             String thirdField = token.nextToken();
                             acceptRingos(firstField, thirdField, secondField);
-                            //System.out.println("A Ringo is exchanging information with you...");
+                            System.out.println("A Ringo is exchanging information with you...");
 
                         } else if (FLAG.equals("PR")) {
                             int ping = Integer.parseInt(firstField);
 
                             ringosOnline = Integer.parseInt(secondField);
                             System.out.println("There are " + ringosOnline + " Ringos online.");
-                            //System.out.println("\n\nYou have recieved a ping reply.");
+                            System.out.println("\n\nYou have recieved a ping reply.");
                             System.out.println("Ping was estimated at " + Math.abs(ping) + "ms.");
                             /*
 
@@ -139,9 +140,16 @@ public class Ringo {
                             String timeStamp = firstField;
                             String ipOfSender = secondField;
                             String port = token.nextToken();
+                            System.out.println("timestamp : " + timeStamp + " ipOfSender : " + ipOfSender + " port " + port);
                             replyToMatrix(timeStamp, ipOfSender, port);
                         } else if (FLAG.equals("MR")) {
                             //populate matrix
+                            String timeStamp = firstField;
+                            String ipOfSender = secondField;
+                            String port = token.nextToken();
+                            System.out.println("timestamp : " + timeStamp + " ipOfSender : " + ipOfSender + " port " + port);
+                            System.out.println("REPLY timestamp : " + timeStamp);
+                            calculatedPing = true;
                         }
 
 
@@ -151,11 +159,21 @@ public class Ringo {
 
                     //KATIE
                     if (ringosOnline == n && !calculatedPing) {
+                        if (num_iters >= n) {
+                            System.out.println("BREAKING LOOP");
+                            break;
+                        }
+                        System.out.println("sending RTTs for matrix");
                         for (Map.Entry<ringoAddr, Integer> entry : knownRingos.entrySet()) {
-                            
                             ringoAddr ra = entry.getKey();
                             String ip = ra.getIP(); //IP ADDR OF RINGO
                             Integer port = entry.getValue(); //PORT OF RINGO
+                            //don't send to yourself
+                            if (port == PORT_NUMBER) {
+                                num_iters++;
+                                continue;
+                            }
+                            System.out.println(entry.getKey() + entry.getKey().getIP() + " " + entry.getValue());
                             String ping = ip + " " + port;
                             byte[] send = ping.getBytes();
 
@@ -168,6 +186,8 @@ public class Ringo {
                                 InetAddress curRingo = InetAddress.getByName(POC_NAME);
                                 DatagramPacket packet = new DatagramPacket(buf, buf.length, curRingo, port);
                                 try {
+                                    num_iters++;
+                                    System.out.println("my iteration number " + num_iters);
                                     ds.send(packet);
                                 } catch (Exception e) {
                                     //
@@ -275,7 +295,7 @@ public class Ringo {
         try {
             DatagramPacket dp = new DatagramPacket(send, send.length, InetAddress.getLocalHost(), Integer.parseInt(senderPort.trim()));
             ds.send(dp);
-            //System.out.println("You have sent the requesting Ringo a reply.\n");
+            System.out.println("You have sent the requesting Ringo a reply.\n");
             broadcastRingos(InetAddress.getLocalHost(), Integer.parseInt(senderPort));
 
 
@@ -299,9 +319,7 @@ public class Ringo {
                 byte[] ringMap = keyValue.getBytes();
 
                 for (Integer port: knownRingos.values()) {
-
                    //Don't send to itself.
-
                         DatagramPacket mapPacket =
                                 new DatagramPacket(ringMap, ringMap.length, ipAddr, port);
                         ds.send(mapPacket);
@@ -316,7 +334,6 @@ public class Ringo {
         try {
             if (!(knownRingos.containsValue(Integer.parseInt(ringoID.trim())))) {
                 knownRingos.put(new ringoAddr(ringoIP.trim(), Integer.parseInt(port.trim())), Integer.parseInt(ringoID.trim()));
-
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -357,7 +374,7 @@ public class Ringo {
         long RTT = Long.valueOf(timeStamp) - cur;
         RTT *= 2;
 
-        String ret = "MR " + RTT;
+        String ret = "MR " + RTT + " " + ip + " " + port;
         byte[] send = ret.getBytes();
 
         try {
