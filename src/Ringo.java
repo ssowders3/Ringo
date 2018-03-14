@@ -114,11 +114,14 @@ public class Ringo {
                         String secondField = token.nextToken().trim();
                         if (FLAG.equals("P")) {
                             System.out.println("\n\nA new Ringo has requested to ping you.");
+                            if (calculatedPing == true) {
+                                System.out.println("PING RECIEVED FOR MATRIX");
+                            }
                             recievePing(firstField, secondField);
                         } else if (FLAG.equals("E")) {
                             String thirdField = token.nextToken();
                             acceptRingos(firstField, thirdField, secondField);
-                            System.out.println("A Ringo is exchanging information with you...");
+                            //System.out.println("A Ringo is exchanging information with you...");
 
                         } else if (FLAG.equals("PR")) {
                             int ping = Integer.parseInt(firstField);
@@ -156,7 +159,7 @@ public class Ringo {
                     }
 
                     //KATIE
-                    System.out.println("My ringos online " + knownRingos.size());
+                    //System.out.println("My ringos online " + knownRingos.size());
                     if (knownRingos.size() == n) {
                         //System.out.println("sending RTTs for matrix");
                         for (Map.Entry<ringoAddr, Integer> entry : knownRingos.entrySet()) {
@@ -183,11 +186,13 @@ public class Ringo {
                             String ms = "PM " + msSend + " " + ip + " " + port;
                             byte[] buf = ms.getBytes();
                             try {
-                                InetAddress curRingo = InetAddress.getByName(POC_NAME);
-                                DatagramPacket packet = new DatagramPacket(buf, buf.length, curRingo, port);
+                                String curRingo = "127.0.0.1";
+                                System.out.println("sender ip address " + curRingo);
+                                DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(), port);
                                 try {
                                     num_iters++;
-                                    System.out.println("my iteration number " + num_iters);
+                                    calculatedPing = true;
+                                    //System.out.println("my iteration number " + num_iters);
                                     ds.send(packet);
                                 } catch (Exception e) {
                                     //
