@@ -38,8 +38,8 @@ public class Ringo {
 
     public static Thread checkForPackets;
 
-    public static int[] vector;
-    public static int[][] matrix;
+    public static String[] vector;
+    public static String[][] matrix;
 
     public static DatagramSocket ds;
 
@@ -112,7 +112,7 @@ public class Ringo {
         matrixRingos = new TreeMap<ringoAddr, Integer>();
         calculatedPing = false;
 
-        matrix = new int[n][n];
+        matrix = new String[n][n + 2];
 
         try {
             ds = new DatagramSocket(PORT_NUMBER); //Opens UDP Socket at PORT_NUMBER;
@@ -202,15 +202,21 @@ public class Ringo {
                             matrixReplies++;
 
                             //System.out.println("Recieved a vector from Ringo " + firstField);
-                            int[] guest = new int[n];
+                            String[] guest = new String[n + 2];
 
                             for (int i = 0; i < (n); i++) {
                                 String curNumber = token.nextToken().trim();
-                                guest[i] = Integer.parseInt(curNumber);
+                                guest[i] = curNumber;
                             }
+                            guest[n] = token.nextToken().trim();
+                            guest[n + 1] = token.nextToken().trim();
+
                             matrix[Integer.parseInt(firstField) - 1] = guest;
 
                             if (matrixRingos.size() == n) {
+
+
+
                                 for (int i = 0; i < n; i++) {
                                     //System.out.println(Arrays.toString(matrix[i]));
                                     if (Arrays.toString(matrix[i]).equals(Arrays.toString(vector)) ){
@@ -284,7 +290,7 @@ public class Ringo {
             Scanner scan = new Scanner(System.in);
 
 
-            //System.out.println("Ringo command: ");
+            System.out.println("Ringo command: ");
             StringTokenizer token = new StringTokenizer(scan.nextLine());
 
             String command = token.nextToken();
@@ -300,14 +306,27 @@ public class Ringo {
                 System.out.println("Sending " + filename);
 
             } else if (command.equals("show-matrix")) {
+                System.out.print("     ");
+                for (int l = 0; l < n; l++) {
+                    System.out.print(l + ")     ");
+                }
+                System.out.println("");
                 for (int i = 0; i < n; i++) {
-                    System.out.print("[");
+                    System.out.print(i + ") [");
                     for (int j = 0; j < n; j++) {
                         System.out.print(matrix[i][j] + "     ");
                     }
                     System.out.println("]");
                 }
-                System.out.println("This Ringo is located on row " + row + ".");
+
+                String[][] a = new String[matrix.length][];
+                for (int i = 0; i < matrix.length; i++) {
+                    a[i] = Arrays.copyOfRange(matrix[i], 3, 5);
+                }
+
+                for (int i = 0; i < n; i++) {
+                    System.out.println("Row/Column " + i + " refers to Ringo " + Arrays.deepToString(a[i]));
+                }
 
 
             } else if (command.equals("show-ring")) {
@@ -347,7 +366,7 @@ public class Ringo {
 
     public static void initializeVector() {
 
-        vector = new int[n];
+        vector = new String[n];
         int i = 0;
         int count = 1;
 
@@ -358,7 +377,7 @@ public class Ringo {
             int id = ra.getID();
 
             Integer ping = otherRingos.getValue();
-            vector[i] = ping;
+            vector[i] = "" + ping;
             if ((ping == 99999)) {
                 count = i + 1;
             }
@@ -366,10 +385,20 @@ public class Ringo {
             i++;
         }
 
-
-        String s = "M " + count + " " ;
+        String s = "";
+        try {
+            s = "M " + count + " ";
+        } catch (Exception e) {
+            //
+        }
         for (int j = 0; j < n; j++) {
             s = s + " " + vector[j];
+        }
+
+        try {
+            s = s + " " + InetAddress.getLocalHost().getHostAddress() + " " + PORT_NUMBER;
+        } catch (Exception e) {
+            //
         }
         byte[] info = s.getBytes();
 
