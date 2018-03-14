@@ -62,6 +62,7 @@ public class Ringo {
     }
 
     public static Map<ringoAddr, Integer> knownRingos;
+    public static Map<String, Integer> matrixRingos;
 
     public static void main(String[] args) {
         //TODO: Create command line parsing arguments
@@ -77,6 +78,7 @@ public class Ringo {
         printStats();
 
         knownRingos = new HashMap<ringoAddr, Integer>();
+        matrixRingos = new HashMap<String, Integer>();
         calculatedPing = false;
 
         try {
@@ -142,15 +144,18 @@ public class Ringo {
                             String timeStamp = firstField;
                             String ipOfSender = secondField;
                             String port = token.nextToken();
-                            System.out.println("timestamp : " + timeStamp + " ipOfSender : " + ipOfSender + " port " + port);
+                            System.out.println("PING MATRIX timestamp : " + timeStamp + " ipOfSender : " + ipOfSender + " port " + port);
                             replyToMatrix(timeStamp, ipOfSender, port);
                         } else if (FLAG.equals("MR")) {
                             //populate matrix
                             String timeStamp = firstField;
                             String ipOfSender = secondField;
                             String port = token.nextToken();
-                            System.out.println("timestamp : " + timeStamp + " ipOfSender : " + ipOfSender + " port " + port);
-                            System.out.println("REPLY timestamp : " + timeStamp);
+                            int pingerTime = Math.abs(Integer.parseInt(timeStamp));
+                            System.out.println("RECEIVE PING timestamp : " + pingerTime + " ipOfSender : " + ipOfSender + " port " + port);
+                            System.out.println("REPLY timestamp : " + pingerTime);
+                            matrixRingos.put(port, pingerTime);
+                            System.out.println(matrixRingos);
                         }
 
 
@@ -183,7 +188,7 @@ public class Ringo {
                             Date now = new Date();
                             long msSend = now.getTime();
 
-                            String ms = "PM " + msSend + " " + ip + " " + port;
+                            String ms = "PM " + msSend + " " + ip + " " + PORT_NUMBER;
                             byte[] buf = ms.getBytes();
                             try {
                                 String curRingo = "127.0.0.1";
@@ -379,7 +384,7 @@ public class Ringo {
         long RTT = Long.valueOf(timeStamp) - cur;
         RTT *= 2;
 
-        String ret = "MR " + RTT + " " + ip + " " + port;
+        String ret = "MR " + RTT + " " + ip + " " + PORT_NUMBER;
         byte[] send = ret.getBytes();
 
         try {
