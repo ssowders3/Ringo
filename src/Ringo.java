@@ -45,7 +45,7 @@ public class Ringo {
 
     public static String cmdError = "There was an error in your command line arguments. Try again.";
 
-    static class ringoAddr implements Comparable<ringoAddr>, Comparator<ringoAddr>{
+    static class ringoAddr implements Comparable<ringoAddr>, Comparator<ringoAddr> {
         public String IP_ADDR;
         public int ID;
         public int port;
@@ -74,7 +74,7 @@ public class Ringo {
         }
 
         public String toString() {
-            return "RINGO: "  + IP_ADDR +  " ,ID: " + ID + " , PORT NUMBER";
+            return "RINGO: " + IP_ADDR + " ,ID: " + ID + " , PORT NUMBER";
         }
 
         @Override
@@ -126,7 +126,7 @@ public class Ringo {
         } else {
             ringosOnline = 1;
             initialRingoCount = 2;
-            RINGOID = ringosOnline-1;
+            RINGOID = ringosOnline - 1;
             knownRingos.put(new ringoAddr("127.0.0.1", 0), PORT_NUMBER);
 
         }
@@ -214,12 +214,9 @@ public class Ringo {
                             matrix[Integer.parseInt(firstField) - 1] = guest;
 
                             if (matrixRingos.size() == n) {
-
-
-
                                 for (int i = 0; i < n; i++) {
                                     //System.out.println(Arrays.toString(matrix[i]));
-                                    if (Arrays.toString(matrix[i]).equals(Arrays.toString(vector)) ){
+                                    if (Arrays.toString(matrix[i]).equals(Arrays.toString(vector))) {
                                         row = i + 1;
                                         break;
                                     }
@@ -321,7 +318,7 @@ public class Ringo {
 
                 String[][] a = new String[matrix.length][];
                 for (int i = 0; i < matrix.length; i++) {
-                    a[i] = Arrays.copyOfRange(matrix[i], n, n+2);
+                    a[i] = Arrays.copyOfRange(matrix[i], n, n + 2);
                 }
 
                 for (int i = 0; i < n; i++) {
@@ -330,7 +327,18 @@ public class Ringo {
 
 
             } else if (command.equals("show-ring")) {
-                System.out.println("Ringo's Ring = \n" + Arrays.toString(vector));
+                dijkstra(matrix, PORT_NUMBER);
+                System.out.println();
+                String[][] a = new String[matrix.length][];
+                for (int i = 0; i < matrix.length; i++) {
+                    a[i] = Arrays.copyOfRange(matrix[i], n, n + 2);
+                }
+                for (int i = 0; i < n; i++) {
+                    System.out.println("Row/Column " + i + " refers to Ringo " + Arrays.deepToString(a[i]));
+                }
+
+
+                //System.out.println("Ringo's Ring = \n" + Arrays.toString(vector));
             } else if (command.equals("disconnect")) {
                 System.out.println("Exiting...");
                 System.exit(-1);
@@ -410,10 +418,7 @@ public class Ringo {
                 InetAddress target = InetAddress.getByName(ra.getIP());
                 DatagramPacket packet = new DatagramPacket(info, info.length, target, known.getValue());
                 try {
-
-                        ds.send(packet);
-
-
+                    ds.send(packet);
                     //System.out.println("Sent vector!");
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -459,7 +464,7 @@ public class Ringo {
             knownRingos.put(new ringoAddr("127.0.0.1", ringosOnline), Integer.parseInt(senderPort));
         }
 
-        ringosOnline+=1;
+        ringosOnline += 1;
 
         String ret = "PR " + RTT + " " + ringosOnline;
         byte[] send = ret.getBytes();
@@ -491,11 +496,11 @@ public class Ringo {
                 String keyValue = ("E " + ip + " " + id + " " + value);
                 byte[] ringMap = keyValue.getBytes();
 
-                for (Integer port: knownRingos.values()) {
-                   //Don't send to itself.
-                        DatagramPacket mapPacket =
-                                new DatagramPacket(ringMap, ringMap.length, ipAddr, port);
-                        ds.send(mapPacket);
+                for (Integer port : knownRingos.values()) {
+                    //Don't send to itself.
+                    DatagramPacket mapPacket =
+                            new DatagramPacket(ringMap, ringMap.length, ipAddr, port);
+                    ds.send(mapPacket);
                 }
                 //System.out.println("There are currently " + knownRingos.size() + " Ringos online.");
             }
@@ -503,7 +508,8 @@ public class Ringo {
             e.printStackTrace();
         }
     }
-    public static void acceptRingos(String ringoIP, String ringoID, String port){
+
+    public static void acceptRingos(String ringoIP, String ringoID, String port) {
         try {
             if (!(knownRingos.containsValue(Integer.parseInt(ringoID.trim())))) {
                 knownRingos.put(new ringoAddr(ringoIP.trim(), Integer.parseInt(port.trim())), Integer.parseInt(ringoID.trim()));
@@ -567,9 +573,172 @@ public class Ringo {
         //TODO: Ping other ringos in the network. Calculate RTT through timestamp.
     }
 
-    public void floydWarshall() {
-        //TODO: Construct shortest path among all Ringos in the network.
+    public static int[][] makeIdealMatrix(String[][] matrix) {
+        int[][] newMatrix = new int[n][n];
+        for (int i = 0; i < n; i++) {
+            //System.out.print(i + ") [");
+            for (int j = 0; j < n; j++) {
+                System.out.print(matrix[i][j] + "     ");
+                newMatrix[i][j] = Integer.parseInt(matrix[i][j]);
+//                if (newMatrix[i][j] == 99999){
+//                    newMatrix[i][j] = 0;
+//                }
+                newMatrix[i][j] = (newMatrix[i][j] + newMatrix[j][i]) / 2;
+                newMatrix[j][i] = (newMatrix[i][j] + newMatrix[j][i]) / 2;
+            }
+        }
+        printMatrix(newMatrix);
+        return newMatrix;
     }
+    final static int NO_PARENT = -1;
+    public static void dijkstra(String[][] graph, int src) {
+        //TODO: Construct shortest path among all Ringos in the network.
+        //System.out.println(matrix.toString());
+        int dist[] = new int[n]; // The output array. dist[i] will hold
+        // the shortest distance from src to i
+        int[][] newMatrix = new int[n][n];
+        int[][] intMatrix = new int[n][n];
+
+        for (int i = 0; i < n; i++) {
+            //System.out.print(i + ") [");
+            for (int j = 0; j < n; j++) {
+                System.out.print(graph[i][j] + "     ");
+                intMatrix[i][j] = Integer.parseInt(graph[i][j]);
+                newMatrix[i][j] = intMatrix[i][j];
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            //System.out.print(i + ") [");
+            for (int j = 0; j < n; j++) {
+                intMatrix[i][j] = (newMatrix[i][j] + newMatrix[j][i]) / 2;
+            }
+        }
+        printMatrix(intMatrix);
+
+        // shortestDistances[i] will hold the
+        // shortest distance from src to i
+        int[] shortestDistances = new int[n];
+
+        // added[i] will true if vertex i is
+        // included / in shortest path tree
+        // or shortest distance from src to 
+        // i is finalized
+        boolean[] added = new boolean[n];
+
+        // Initialize all distances as 
+        // INFINITE and added[] as false
+        for (int vertexIndex = 0; vertexIndex < n; vertexIndex++) {
+            shortestDistances[vertexIndex] = Integer.MAX_VALUE;
+            added[vertexIndex] = false;
+        }
+
+        // Distance of source vertex from
+        // itself is always 0
+        src = 0;
+        shortestDistances[src] = 0;
+
+        // Parent array to store shortest
+        // path tree
+        int[] parents = new int[n];
+
+        // The starting vertex does not 
+        // have a parent
+        parents[src] = NO_PARENT;
+
+        // Find shortest path for all 
+        // vertices
+        for (int i = 1; i < n; i++) {
+
+            // Pick the minimum distance vertex
+            // from the set of vertices not yet
+            // processed. nearestVertex is 
+            // always equal to startNode in 
+            // first iteration.
+            int nearestVertex = -1;
+            int shortestDistance = Integer.MAX_VALUE;
+            for (int vertexIndex = 0; vertexIndex < n; vertexIndex++) {
+                if (!added[vertexIndex] &&
+                        shortestDistances[vertexIndex] < shortestDistance) {
+                    nearestVertex = vertexIndex;
+                    shortestDistance = shortestDistances[vertexIndex];
+                }
+            }
+
+            // Mark the picked vertex as
+            // processed
+            added[nearestVertex] = true;
+
+            // Update dist value of the
+            // adjacent vertices of the
+            // picked vertex.
+            for (int vertexIndex = 0; vertexIndex < n; vertexIndex++) {
+                int edgeDistance = intMatrix[nearestVertex][vertexIndex];
+
+                if (edgeDistance > 0
+                        && ((shortestDistance + edgeDistance) <
+                        shortestDistances[vertexIndex])) {
+                    parents[vertexIndex] = nearestVertex;
+                    shortestDistances[vertexIndex] = shortestDistance + edgeDistance;
+                }
+            }
+        }
+
+        printSolution(src, shortestDistances, parents);
+    }
+
+
+        // A utility function to print
+        // the constructed distances
+        // array and shortest paths
+        static void printSolution(int startVertex,
+                                          int[] distances,
+                                          int[] parents)
+        {
+            int nVertices = distances.length;
+            System.out.print("Vertex\t Distance\tPath");
+
+            for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++)
+            {
+                if (vertexIndex != startVertex)
+                {
+                    System.out.print("\n" + startVertex + " -> ");
+                    System.out.print(vertexIndex + " \t\t ");
+                    System.out.print(distances[vertexIndex] + "\t\t");
+                    printPath(vertexIndex, parents);
+                }
+            }
+        }
+
+        // Function to print shortest path
+        // from source to currentVertex
+        // using parents array
+        private static void printPath(int currentVertex,
+                                      int[] parents)
+        {
+            // Base case : Source node has
+            // been processed
+            if (currentVertex == NO_PARENT)
+            {
+                return;
+            }
+            printPath(parents[currentVertex], parents);
+            System.out.print(currentVertex + " ");
+        }
+
+    final static int INF = 99999;
+
+    static void printMatrix(int dist[][]) {
+        System.out.println("\n");
+            for (int i=0; i<n; ++i) {
+                for (int j=0; j<n; ++j) {
+                    if (dist[i][j]==INF)
+                        System.out.print("INF ");
+                    else
+                        System.out.print(dist[i][j]+"   ");
+                }
+                System.out.println();
+            }
+        }
 
     public void sendPacket(Ringo r) {
         //TODO: Send a packet to another Ringo in the network.
