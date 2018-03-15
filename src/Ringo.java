@@ -25,6 +25,7 @@ public class Ringo {
 
     public static int RINGOID;
     public static boolean calculatedPing = false;
+    public static boolean calculatedRing = false;
     public static int num_iters = 0;
 
     public static int row;
@@ -40,6 +41,8 @@ public class Ringo {
 
     public static String[] vector;
     public static String[][] matrix;
+
+    public static int[][] intMatrix;
 
     public static DatagramSocket ds;
 
@@ -167,19 +170,8 @@ public class Ringo {
                         } else if (FLAG.equals("PR")) {
                             String secondField = token.nextToken().trim();
                             int ping = Integer.parseInt(firstField);
-
                             ringosOnline = Integer.parseInt(secondField);
-                            //System.out.println("There are " + ringosOnline + " Ringos online.");
-                            //System.out.println("\n\nYou have recieved a ping reply.");
-                            //System.out.println("Ping was estimated at " + Math.abs(ping) + "ms.");
-                            /*
 
-                              0  1  2
-                            0 0
-                            1    0
-                            2       0
-                             */
-                            //System.out.println("There are now " + secondField + " Ringos online.");
                         } else if (FLAG.equals("PM")) {//PING MATRIX{
                             String timeStamp = firstField;
                             String secondField = token.nextToken().trim();
@@ -201,7 +193,6 @@ public class Ringo {
                         } else if (FLAG.equals("M")) {
                             matrixReplies++;
 
-                            //System.out.println("Recieved a vector from Ringo " + firstField);
                             String[] guest = new String[n + 2];
 
                             for (int i = 0; i < (n); i++) {
@@ -214,13 +205,7 @@ public class Ringo {
                             matrix[Integer.parseInt(firstField) - 1] = guest;
 
                             if (matrixRingos.size() == n) {
-                                for (int i = 0; i < n; i++) {
-                                    //System.out.println(Arrays.toString(matrix[i]));
-                                    if (Arrays.toString(matrix[i]).equals(Arrays.toString(vector))) {
-                                        row = i + 1;
-                                        break;
-                                    }
-                                }
+
                             }
                             //System.out.println(firstField);
                             //System.out.println(secondField);
@@ -276,6 +261,20 @@ public class Ringo {
                         if (matrixRingos.size() == n) {
                             initializeVector();
                         }
+
+
+                    }
+                    boolean matrixNull = false;
+                    for (int i = 0; i < n; i++) {
+                        for (int j = 0; j < n; j++){
+                            if (matrix[i][j] == null) {
+                                matrixNull = true;
+                            }
+                        }
+                    }
+                    if (!(matrixNull) && !calculatedRing) {
+                        dijkstra(matrix, PORT_NUMBER, false);
+                        //calculateRing();
                     }
                 }
             }
@@ -325,20 +324,32 @@ public class Ringo {
                     System.out.println("Row/Column " + i + " refers to Ringo " + Arrays.deepToString(a[i]));
                 }
 
-
             } else if (command.equals("show-ring")) {
-                dijkstra(matrix, PORT_NUMBER);
+
+                dijkstra(matrix, PORT_NUMBER, true);
                 System.out.println();
-                String[][] a = new String[matrix.length][];
-                for (int i = 0; i < matrix.length; i++) {
-                    a[i] = Arrays.copyOfRange(matrix[i], n, n + 2);
-                }
+                int[] lowestInRows = new int[n];
+                int counter = 0;
+                int j = n - 1;
+
                 for (int i = 0; i < n; i++) {
-                    System.out.println("Row/Column " + i + " refers to Ringo " + Arrays.deepToString(a[i]));
+                    j = j - (n - 2);
+                    for (; j < n; j++) {
+                        int currentI = i;
+                        int currentJ = j;
+
+                        int curValue = intMatrix[i][j];
+                        if (curValue == 99999) {
+                            break;
+                        }
+
+                        System.out.println("The path from ringo " + i + " to Ringo  " + j + " is averaged at " + curValue +" ms.");
+
+                        counter++;
+                    }
                 }
-
-
-                //System.out.println("Ringo's Ring = \n" + Arrays.toString(vector));
+                System.out.println("For optimal ring formation, start at the sender Ringo, and forward to Reciever according to this data/");
+                calculatedRing = true;
             } else if (command.equals("disconnect")) {
                 System.out.println("Exiting...");
                 System.exit(-1);
@@ -357,8 +368,6 @@ public class Ringo {
                 } else {
                     System.out.println("Connect the number of Ringos equal to N first.");
                 }
-            } else if (command.equals("matrix-ringos")) {
-
             } else {
 
                 System.out.println("Command Not Recognized. Valid commands include: \n");
@@ -428,6 +437,7 @@ public class Ringo {
             }
         }
         calculatedPing = true;
+
 
     }
 
@@ -519,6 +529,29 @@ public class Ringo {
         }
     }
 
+    public static void calculateRing() {
+        System.out.println(Arrays.toString(intMatrix));
+
+        int[] lowestInRows = new int[n];
+        int counter = 0;
+        int j = 2;
+
+        for (int i = 0; i < n; i++) {
+            j = j - 1;
+            for (; j < n; j++) {
+
+                int curValue = intMatrix[i][j];
+                if (curValue == 99999) {
+                    break;
+                }
+                System.out.println("The shortest path from ringo " + i + " to Ringo  " + j + " is " + curValue +" ms.");
+                counter++;
+            }
+        }
+
+        calculatedRing = true;
+    }
+
     public static void printStats() {
         System.out.println("******************************");
         if (flag.equals("S")) {
@@ -591,18 +624,18 @@ public class Ringo {
         return newMatrix;
     }
     final static int NO_PARENT = -1;
-    public static void dijkstra(String[][] graph, int src) {
+    public static void dijkstra(String[][] graph, int src, boolean showOutput) {
         //TODO: Construct shortest path among all Ringos in the network.
         //System.out.println(matrix.toString());
         int dist[] = new int[n]; // The output array. dist[i] will hold
         // the shortest distance from src to i
         int[][] newMatrix = new int[n][n];
-        int[][] intMatrix = new int[n][n];
+        intMatrix = new int[n][n];
 
         for (int i = 0; i < n; i++) {
             //System.out.print(i + ") [");
             for (int j = 0; j < n; j++) {
-                System.out.print(graph[i][j] + "     ");
+                //System.out.print(graph[i][j] + "     ");
                 intMatrix[i][j] = Integer.parseInt(graph[i][j]);
                 newMatrix[i][j] = intMatrix[i][j];
             }
@@ -613,7 +646,7 @@ public class Ringo {
                 intMatrix[i][j] = (newMatrix[i][j] + newMatrix[j][i]) / 2;
             }
         }
-        printMatrix(intMatrix);
+        //printMatrix(intMatrix);
 
         // shortestDistances[i] will hold the
         // shortest distance from src to i
@@ -683,7 +716,10 @@ public class Ringo {
             }
         }
 
-        printSolution(src, shortestDistances, parents);
+        if (showOutput) {
+            printSolution(src, shortestDistances, parents);
+
+        }
     }
 
 
