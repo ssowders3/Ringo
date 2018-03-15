@@ -329,6 +329,15 @@ public class Ringo {
             } else if (command.equals("show-ring")) {
                 dijkstra(matrix, PORT_NUMBER);
                 System.out.println();
+                String[][] a = new String[matrix.length][];
+                for (int i = 0; i < matrix.length; i++) {
+                    a[i] = Arrays.copyOfRange(matrix[i], n, n + 2);
+                }
+                for (int i = 0; i < n; i++) {
+                    System.out.println("Row/Column " + i + " refers to Ringo " + Arrays.deepToString(a[i]));
+                }
+
+
                 //System.out.println("Ringo's Ring = \n" + Arrays.toString(vector));
             } else if (command.equals("disconnect")) {
                 System.out.println("Exiting...");
