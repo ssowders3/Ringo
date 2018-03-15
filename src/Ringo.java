@@ -45,7 +45,7 @@ public class Ringo {
 
     public static String cmdError = "There was an error in your command line arguments. Try again.";
 
-    static class ringoAddr implements Comparable<ringoAddr>, Comparator<ringoAddr>{
+    static class ringoAddr implements Comparable<ringoAddr>, Comparator<ringoAddr> {
         public String IP_ADDR;
         public int ID;
         public int port;
@@ -74,7 +74,7 @@ public class Ringo {
         }
 
         public String toString() {
-            return "RINGO: "  + IP_ADDR +  " ,ID: " + ID + " , PORT NUMBER";
+            return "RINGO: " + IP_ADDR + " ,ID: " + ID + " , PORT NUMBER";
         }
 
         @Override
@@ -126,7 +126,7 @@ public class Ringo {
         } else {
             ringosOnline = 1;
             initialRingoCount = 2;
-            RINGOID = ringosOnline-1;
+            RINGOID = ringosOnline - 1;
             knownRingos.put(new ringoAddr("127.0.0.1", 0), PORT_NUMBER);
 
         }
@@ -216,7 +216,7 @@ public class Ringo {
                             if (matrixRingos.size() == n) {
                                 for (int i = 0; i < n; i++) {
                                     //System.out.println(Arrays.toString(matrix[i]));
-                                    if (Arrays.toString(matrix[i]).equals(Arrays.toString(vector)) ){
+                                    if (Arrays.toString(matrix[i]).equals(Arrays.toString(vector))) {
                                         row = i + 1;
                                         break;
                                     }
@@ -318,7 +318,7 @@ public class Ringo {
 
                 String[][] a = new String[matrix.length][];
                 for (int i = 0; i < matrix.length; i++) {
-                    a[i] = Arrays.copyOfRange(matrix[i], n, n+2);
+                    a[i] = Arrays.copyOfRange(matrix[i], n, n + 2);
                 }
 
                 for (int i = 0; i < n; i++) {
@@ -327,13 +327,8 @@ public class Ringo {
 
 
             } else if (command.equals("show-ring")) {
-//                for (int i = 0; i < n; i++) {
-//                    System.out.print(i + ") [");
-//                    for (int j = 0; j < n; j++) {
-//                        System.out.print(matrix[i][j] + "     ");
-//                    }
-//                }
-                floydWarshall(matrix, PORT_NUMBER);
+                dijkstra(matrix, PORT_NUMBER);
+                System.out.println();
                 //System.out.println("Ringo's Ring = \n" + Arrays.toString(vector));
             } else if (command.equals("disconnect")) {
                 System.out.println("Exiting...");
@@ -414,7 +409,7 @@ public class Ringo {
                 InetAddress target = InetAddress.getByName(ra.getIP());
                 DatagramPacket packet = new DatagramPacket(info, info.length, target, known.getValue());
                 try {
-                        ds.send(packet);
+                    ds.send(packet);
                     //System.out.println("Sent vector!");
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -460,7 +455,7 @@ public class Ringo {
             knownRingos.put(new ringoAddr("127.0.0.1", ringosOnline), Integer.parseInt(senderPort));
         }
 
-        ringosOnline+=1;
+        ringosOnline += 1;
 
         String ret = "PR " + RTT + " " + ringosOnline;
         byte[] send = ret.getBytes();
@@ -492,11 +487,11 @@ public class Ringo {
                 String keyValue = ("E " + ip + " " + id + " " + value);
                 byte[] ringMap = keyValue.getBytes();
 
-                for (Integer port: knownRingos.values()) {
-                   //Don't send to itself.
-                        DatagramPacket mapPacket =
-                                new DatagramPacket(ringMap, ringMap.length, ipAddr, port);
-                        ds.send(mapPacket);
+                for (Integer port : knownRingos.values()) {
+                    //Don't send to itself.
+                    DatagramPacket mapPacket =
+                            new DatagramPacket(ringMap, ringMap.length, ipAddr, port);
+                    ds.send(mapPacket);
                 }
                 //System.out.println("There are currently " + knownRingos.size() + " Ringos online.");
             }
@@ -504,7 +499,8 @@ public class Ringo {
             e.printStackTrace();
         }
     }
-    public static void acceptRingos(String ringoIP, String ringoID, String port){
+
+    public static void acceptRingos(String ringoIP, String ringoID, String port) {
         try {
             if (!(knownRingos.containsValue(Integer.parseInt(ringoID.trim())))) {
                 knownRingos.put(new ringoAddr(ringoIP.trim(), Integer.parseInt(port.trim())), Integer.parseInt(ringoID.trim()));
@@ -582,24 +578,18 @@ public class Ringo {
                 newMatrix[j][i] = (newMatrix[i][j] + newMatrix[j][i]) / 2;
             }
         }
-        printSolutionFW(newMatrix);
+        printMatrix(newMatrix);
         return newMatrix;
     }
-
-    public static void floydWarshall(String[][] graph, int src) {
+    final static int NO_PARENT = -1;
+    public static void dijkstra(String[][] graph, int src) {
         //TODO: Construct shortest path among all Ringos in the network.
         //System.out.println(matrix.toString());
         int dist[] = new int[n]; // The output array. dist[i] will hold
         // the shortest distance from src to i
         int[][] newMatrix = new int[n][n];
         int[][] intMatrix = new int[n][n];
-        int[][] arr = new int[n][n];
-        for( int i = 0; i < arr.length; i++) {
-            for( int j = 0; j < arr[i].length; j++) {
-                System.out.print( "[" + i + "," + j +"]");
-            }
-            System.out.println();
-        }
+
         for (int i = 0; i < n; i++) {
             //System.out.print(i + ") [");
             for (int j = 0; j < n; j++) {
@@ -614,131 +604,122 @@ public class Ringo {
                 intMatrix[i][j] = (newMatrix[i][j] + newMatrix[j][i]) / 2;
             }
         }
-        printSolutionFW(intMatrix);
-        // sptSet[i] will true if vertex i is included in shortest
-        // path tree or shortest distance from src to i is finalized
-        Boolean sptSet[] = new Boolean[n];
+        printMatrix(intMatrix);
 
-        // Initialize all distances as INFINITE and stpSet[] as false
-        for (int i = 0; i < n; i++)
-        {
-            dist[i] = Integer.MAX_VALUE;
-            sptSet[i] = false;
+        // shortestDistances[i] will hold the
+        // shortest distance from src to i
+        int[] shortestDistances = new int[n];
+
+        // added[i] will true if vertex i is
+        // included / in shortest path tree
+        // or shortest distance from src to 
+        // i is finalized
+        boolean[] added = new boolean[n];
+
+        // Initialize all distances as 
+        // INFINITE and added[] as false
+        for (int vertexIndex = 0; vertexIndex < n; vertexIndex++) {
+            shortestDistances[vertexIndex] = Integer.MAX_VALUE;
+            added[vertexIndex] = false;
         }
 
-        // Distance of source vertex from itself is always 0
-        src = 0; //CHANGE
-        dist[src] = 0;
+        // Distance of source vertex from
+        // itself is always 0
+        src = 0;
+        shortestDistances[src] = 0;
 
-        // Find shortest path for all vertices
-        for (int count = 0; count < n-1; count++)
-        {
-            // Pick the minimum distance vertex from the set of vertices
-            // not yet processed. u is always equal to src in first
-            // iteration.
-            int u = minDistance(dist, sptSet);
+        // Parent array to store shortest
+        // path tree
+        int[] parents = new int[n];
 
-            // Mark the picked vertex as processed
-            sptSet[u] = true;
+        // The starting vertex does not 
+        // have a parent
+        parents[src] = NO_PARENT;
 
-            // Update dist value of the adjacent vertices of the
+        // Find shortest path for all 
+        // vertices
+        for (int i = 1; i < n; i++) {
+
+            // Pick the minimum distance vertex
+            // from the set of vertices not yet
+            // processed. nearestVertex is 
+            // always equal to startNode in 
+            // first iteration.
+            int nearestVertex = -1;
+            int shortestDistance = Integer.MAX_VALUE;
+            for (int vertexIndex = 0; vertexIndex < n; vertexIndex++) {
+                if (!added[vertexIndex] &&
+                        shortestDistances[vertexIndex] < shortestDistance) {
+                    nearestVertex = vertexIndex;
+                    shortestDistance = shortestDistances[vertexIndex];
+                }
+            }
+
+            // Mark the picked vertex as
+            // processed
+            added[nearestVertex] = true;
+
+            // Update dist value of the
+            // adjacent vertices of the
             // picked vertex.
-            for (int v = 0; v < n; v++)
+            for (int vertexIndex = 0; vertexIndex < n; vertexIndex++) {
+                int edgeDistance = intMatrix[nearestVertex][vertexIndex];
 
-                // Update dist[v] only if is not in sptSet, there is an
-                // edge from u to v, and total weight of path from src to
-                // v through u is smaller than current value of dist[v]
-                if (!sptSet[v] && intMatrix[u][v]!=0 &&
-                        dist[u] != Integer.MAX_VALUE &&
-                        dist[u]+intMatrix[u][v] < dist[v])
-                    dist[v] = dist[u] + intMatrix[u][v];
+                if (edgeDistance > 0
+                        && ((shortestDistance + edgeDistance) <
+                        shortestDistances[vertexIndex])) {
+                    parents[vertexIndex] = nearestVertex;
+                    shortestDistances[vertexIndex] = shortestDistance + edgeDistance;
+                }
+            }
         }
 
-        // print the constructed distance array
-        printSolution(dist, n);
-
-
-//        int[][] newMatrix = new int[n][n];
-//        for (int i = 0; i < n; i++) {
-//            //System.out.print(i + ") [");
-//            for (int j = 0; j < n; j++) {
-//                System.out.print(matrix[i][j] + "     ");
-//                newMatrix[i][j] = Integer.parseInt(matrix[i][j]);
-//                if (newMatrix[i][j] == 99999){
-//                    newMatrix[i][j] = 0;
-//                }
-//            }
-//        }
-//        printSolution(newMatrix);
-//        int dist[][] = new int[n][n];
-//        int i, j, k;
-//
-//        /* Initialize the solution matrix same as input graph matrix.
-//           Or we can say the initial values of shortest distances
-//           are based on shortest paths considering no intermediate
-//           vertex. */
-//        for (i = 0; i < n; i++)
-//            for (j = 0; j < n; j++)
-//                dist[i][j] = newMatrix[i][j];
-//
-//        /* Add all vertices one by one to the set of intermediate
-//           vertices.
-//          ---> Before start of a iteration, we have shortest
-//               distances between all pairs of vertices such that
-//               the shortest distances consider only the vertices in
-//               set {0, 1, 2, .. k-1} as intermediate vertices.
-//          ----> After the end of a iteration, vertex no. k is added
-//                to the set of intermediate vertices and the set
-//                becomes {0, 1, 2, .. k} */
-//        for (k = 0; k < n; k++)
-//        {
-//            // Pick all vertices as source one by one
-//            for (i = 0; i < n; i++)
-//            {
-//                // Pick all vertices as destination for the
-//                // above picked source
-//                for (j = 0; j < n; j++)
-//                {
-//                    // If vertex k is on the shortest path from
-//                    // i to j, then update the value of dist[i][j]
-//                    if (dist[i][k] + dist[k][j] < dist[i][j])
-//                        dist[i][j] = dist[i][k] + dist[k][j];
-//                }
-//            }
-//        }
-//
-//        // Print the shortest distance matrix
-//        printSolution(dist);
+        printSolution(src, shortestDistances, parents);
     }
+
+
+        // A utility function to print
+        // the constructed distances
+        // array and shortest paths
+        static void printSolution(int startVertex,
+                                          int[] distances,
+                                          int[] parents)
+        {
+            int nVertices = distances.length;
+            System.out.print("Vertex\t Distance\tPath");
+
+            for (int vertexIndex = 0; vertexIndex < nVertices; vertexIndex++)
+            {
+                if (vertexIndex != startVertex)
+                {
+                    System.out.print("\n" + startVertex + " -> ");
+                    System.out.print(vertexIndex + " \t\t ");
+                    System.out.print(distances[vertexIndex] + "\t\t");
+                    printPath(vertexIndex, parents);
+                }
+            }
+        }
+
+        // Function to print shortest path
+        // from source to currentVertex
+        // using parents array
+        private static void printPath(int currentVertex,
+                                      int[] parents)
+        {
+            // Base case : Source node has
+            // been processed
+            if (currentVertex == NO_PARENT)
+            {
+                return;
+            }
+            printPath(parents[currentVertex], parents);
+            System.out.print(currentVertex + " ");
+        }
 
     final static int INF = 99999;
 
-    static int minDistance(int dist[], Boolean sptSet[]) {
-        // Initialize min value
-        int min = Integer.MAX_VALUE, min_index=-1;
-
-        for (int v = 0; v < n; v++)
-            if (sptSet[v] == false && dist[v] <= min)
-            {
-                min = dist[v];
-                min_index = v;
-            }
-
-        return min_index;
-    }
-
-    // A utility function to print the constructed distance array
-    static void printSolution(int dist[], int n) {
-        System.out.println("Vertex   Distance from Source");
-        for (int i = 0; i < n; i++)
-            System.out.println(i+" tt "+dist[i]);
-    }
-
-
-
-    static void printSolutionFW(int dist[][]) {
-            System.out.println("\nFollowing matrix shows the shortest "+
-                    "distances between every pair of vertices");
+    static void printMatrix(int dist[][]) {
+        System.out.println("\n");
             for (int i=0; i<n; ++i) {
                 for (int j=0; j<n; ++j) {
                     if (dist[i][j]==INF)
