@@ -321,7 +321,7 @@ public class Ringo {
 
                 String[][] a = new String[matrix.length][];
                 for (int i = 0; i < matrix.length; i++) {
-                    a[i] = Arrays.copyOfRange(matrix[i], 3, 5);
+                    a[i] = Arrays.copyOfRange(matrix[i], n, n+2);
                 }
 
                 for (int i = 0; i < n; i++) {
