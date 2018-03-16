@@ -132,18 +132,18 @@ public class Ringo {
             initialRingoCount = 2;
             RINGOID = ringosOnline - 1;
             try {
-                InetAddress address = InetAddress.getLocalHost();
+                InetAddress address = InetAddress.getByName(POC_NAME);
                 String hostIP = address.getHostAddress() ;
                 knownRingos.put(new ringoAddr(hostIP, 0), PORT_NUMBER);
-            } catch (UnknownHostException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         try {
-            InetAddress address = InetAddress.getLocalHost();
+            InetAddress address = InetAddress.getByName(POC_NAME);
             String hostIP = address.getHostAddress();
             matrixRingos.put(new ringoAddr(hostIP, RINGOID, PORT_NUMBER), 99999);
-        } catch (UnknownHostException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -489,10 +489,10 @@ public class Ringo {
 
         if (!(knownRingos.containsValue(Integer.parseInt(senderPort.trim())))) {
             try {
-                InetAddress address = InetAddress.getLocalHost();
+                InetAddress address = InetAddress.getByName(POC_NAME);
                 String hostIP = address.getHostAddress() ;
                 knownRingos.put(new ringoAddr(hostIP, ringosOnline), Integer.parseInt(senderPort));
-            } catch (UnknownHostException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
