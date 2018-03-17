@@ -22,6 +22,7 @@ public class Ringo {
     public static boolean isFirst = false;
     public static int ringosOnline = 0;
     public static int initialRingoCount = 0;
+    public static String ip;
 
     public static int RINGOID;
     public static boolean calculatedPing = false;
@@ -134,7 +135,7 @@ public class Ringo {
             try {
                 InetAddress address = InetAddress.getByName(POC_NAME);
                 String hostIP = address.getHostAddress() ;
-                knownRingos.put(new ringoAddr(hostIP, 0), PORT_NUMBER);
+                knownRingos.put(new ringoAddr(ip, 0), PORT_NUMBER);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -142,7 +143,7 @@ public class Ringo {
         try {
             InetAddress address = InetAddress.getByName(POC_NAME);
             String hostIP = address.getHostAddress();
-            matrixRingos.put(new ringoAddr(hostIP, RINGOID, PORT_NUMBER), 99999);
+            matrixRingos.put(new ringoAddr(ip, RINGOID, PORT_NUMBER), 99999);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -153,7 +154,7 @@ public class Ringo {
                     try {
                         byte[] packetInfo = new byte[1024];
                         DatagramPacket recieve = //Recieves Ping request at this Ringo's Port number.
-                                new DatagramPacket(packetInfo, packetInfo.length, InetAddress.getLocalHost(), PORT_NUMBER);
+                                new DatagramPacket(packetInfo, packetInfo.length, InetAddress.getByName(ip), PORT_NUMBER);
                         ds.receive(recieve);
 
                         String packetData = new String(packetInfo);
@@ -197,7 +198,7 @@ public class Ringo {
                             String ipOfSender = secondField;
                             String port = token.nextToken();
                             int pingerTime = Math.abs(Integer.parseInt(timeStamp));
-                            matrixRingos.put(new ringoAddr(ipOfSender, RINGOID, Integer.parseInt(port.trim())), pingerTime);
+                            matrixRingos.put(new ringoAddr(ip, RINGOID, Integer.parseInt(port.trim())), pingerTime);
                             //System.out.println("Recieved new RTT");
 
                         } else if (FLAG.equals("M")) {
@@ -255,7 +256,7 @@ public class Ringo {
                             byte[] buf = ms.getBytes();
                             try {
                                 //System.out.println("sender ip address " + curRingo);
-                                DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getLocalHost(), port);
+                                DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getByName(ip), port);
                                 try {
                                     num_iters++;
                                     //System.out.println("my iteration number " + num_iters);
@@ -442,7 +443,7 @@ public class Ringo {
                 ringoAddr ra = known.getKey();
                 //System.out.println("SENDING VECTOR TO " + ra.getIP() + ":" + known.getValue());
                 InetAddress target = InetAddress.getByName(ra.getIP());
-                DatagramPacket packet = new DatagramPacket(info, info.length, target, known.getValue());
+                DatagramPacket packet = new DatagramPacket(info, info.length, InetAddress.getByName(ip), known.getValue());
                 try {
                     ds.send(packet);
                     //System.out.println("Sent vector!");
@@ -468,7 +469,7 @@ public class Ringo {
         byte[] buf = ms.getBytes();
         try {
             InetAddress poc = InetAddress.getByName(POC_NAME);
-            DatagramPacket packet = new DatagramPacket(buf, buf.length, poc, POC_PORT);
+            DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getByName(ip), POC_PORT);
             try {
                 ds.send(packet);
             } catch (Exception e) {
@@ -491,7 +492,7 @@ public class Ringo {
             try {
                 InetAddress address = InetAddress.getByName(POC_NAME);
                 String hostIP = address.getHostAddress() ;
-                knownRingos.put(new ringoAddr(hostIP, ringosOnline), Integer.parseInt(senderPort));
+                knownRingos.put(new ringoAddr(ip, ringosOnline), Integer.parseInt(senderPort));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -504,10 +505,10 @@ public class Ringo {
 
 
         try {
-            DatagramPacket dp = new DatagramPacket(send, send.length, InetAddress.getLocalHost(), Integer.parseInt(senderPort.trim()));
+            DatagramPacket dp = new DatagramPacket(send, send.length, InetAddress.getByName(ip), Integer.parseInt(senderPort.trim()));
             ds.send(dp);
             //System.out.println("You have sent the requesting Ringo a reply.\n");
-            broadcastRingos(InetAddress.getLocalHost(), Integer.parseInt(senderPort));
+            broadcastRingos(InetAddress.getByName(ip), Integer.parseInt(senderPort));
 
 
         } catch (Exception e) {
@@ -532,7 +533,7 @@ public class Ringo {
                 for (Integer port : knownRingos.values()) {
                     //Don't send to itself.
                     DatagramPacket mapPacket =
-                            new DatagramPacket(ringMap, ringMap.length, ipAddr, port);
+                            new DatagramPacket(ringMap, ringMap.length, InetAddress.getByName(ip), port);
                     ds.send(mapPacket);
                 }
                 //System.out.println("There are currently " + knownRingos.size() + " Ringos online.");
@@ -613,7 +614,7 @@ public class Ringo {
         byte[] send = ret.getBytes();
 
         try {
-            DatagramPacket dp = new DatagramPacket(send, send.length, InetAddress.getLocalHost(), Integer.parseInt(port.trim()));
+            DatagramPacket dp = new DatagramPacket(send, send.length, InetAddress.getByName(ip), Integer.parseInt(port.trim()));
             ds.send(dp);
         } catch (Exception e) {
             e.printStackTrace();
@@ -810,6 +811,11 @@ public class Ringo {
                 flag = args[0];
                 PORT_NUMBER = Integer.parseInt(args[1]);
                 POC_NAME = args[2];
+
+                    InetAddress i = InetAddress.getByName("130.207.107.14");
+                    ip = i.getHostAddress();
+                    System.out.println("This Ringo is located at IP: " + ip);
+
                 POC_PORT = Integer.parseInt(args[3]);
                 n = Integer.parseInt(args[4]);
             } catch (Exception e) {
