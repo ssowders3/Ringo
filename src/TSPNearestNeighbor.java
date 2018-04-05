@@ -1,6 +1,7 @@
 import java.util.Stack;
 import java.util.*;
 
+//taken from https://github.com/abreun68/TSP-Project/blob/master/src/edu/rowan/algorithms/NearestNeighborSolver.java
 public class TSPNearestNeighbor
 {
     private int numberOfNodes;
