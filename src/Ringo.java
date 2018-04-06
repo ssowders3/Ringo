@@ -1,9 +1,12 @@
 import javax.xml.crypto.Data;
+import java.io.File;
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -22,7 +25,6 @@ public class Ringo {
     public static final int PACKET_SIZE = 65535;
     public static boolean isFirst = false;
     public static int ringosOnline = 0;
-    public static int initialRingoCount = 0;
     public static String ip;
 
     public static int ping;
@@ -32,14 +34,10 @@ public class Ringo {
     public static int num_iters = 0;
     final static int INF = 99999;
 
-    public static int row;
     public static int matrixReplies;
-
 
     public static Map<ringoAddr, Integer> knownRingos;
     public static Map<ringoAddr, Integer> matrixRingos;
-    public static Map<Integer, Integer> positions = new TreeMap<Integer, Integer>();
-
 
     public static Thread checkForPackets;
 
@@ -52,20 +50,26 @@ public class Ringo {
 
     public static String cmdError = "There was an error in your command line arguments. Try again.";
 
+    //CHANGE BASED ON CURRENT FILE BEING ACCEPTED
+    public static String fileExtension;
+    public static long fileLength;
+
     static class ringoAddr implements Comparable<ringoAddr>, Comparator<ringoAddr> {
         public String IP_ADDR;
         public int ID;
         public int port;
+        public String type;
 
         public ringoAddr(String ip, int p) {
             IP_ADDR = ip;
             ID = p;
         }
 
-        public ringoAddr(String ip, int id, int p) {
+        public ringoAddr(String ip, int id, int p, String type) {
             IP_ADDR = ip;
             this.ID = id;
             this.port = p;
+            this.type = type;
         }
 
         public int getID() {
@@ -79,6 +83,8 @@ public class Ringo {
         public int getPort() {
             return port;
         }
+
+        public String getType() { return type; }
 
         public String toString() {
             return "RINGO: " + IP_ADDR + " ,ID: " + ID + " PORT: " + port + " , RTT";
@@ -158,7 +164,8 @@ public class Ringo {
             InetAddress address = InetAddress.getByName(POC_NAME);
             String hostIP = address.getHostAddress();
             //not sure if we need this
-            knownRingos.put(new ringoAddr(ip, RINGOID, PORT_NUMBER), 99999);
+            //System.out.println("ADDING A " + flag + " TO KNOWNRINGOS");
+            knownRingos.put(new ringoAddr(ip, RINGOID, PORT_NUMBER, flag), 99999);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -188,6 +195,7 @@ public class Ringo {
                             //System.out.println("ENTERING P");
                             String secondField = token.nextToken().trim();
                             String thirdField = token.nextToken().trim();
+                            String type = token.nextToken().trim();
                             //System.out.println("secondField in Ping " + secondField);
                             //System.out.println("thirdField in Ping " + thirdField);
                             //System.out.println("\n\nA new Ringo has requested to ping you.");
@@ -195,25 +203,26 @@ public class Ringo {
                                 //System.out.println("PING RECIEVED FOR MATRIX");
                             }
 
-                            recievePing(firstField, thirdField, secondField);
+                            recievePing(firstField, thirdField, secondField, type);
                         } else if (FLAG.equals("E")) {
                             //System.out.println("ENTERING E");
                             String secondField = token.nextToken().trim();
                             //System.out.println("secondField in Exchange " + secondField);
                             String thirdField = token.nextToken();
+                            String type = token.nextToken();
                            // System.out.println("thirdField in Exchange " + thirdField);
-                            acceptRingos(firstField, secondField, thirdField, ping);
+                            acceptRingos(firstField, secondField, thirdField, ping, type);
                             //System.out.println("A Ringo is exchanging information with you...");
 
                         } else if (FLAG.equals("PR")) {
-                            System.out.println("ENTERING PR");
+                            //System.out.println("ENTERING PR");
                             String secondField = token.nextToken().trim();
                             ping = Integer.parseInt(firstField);
-                            System.out.println(ping);
+                            //System.out.println(ping);
                             ringosOnline = Integer.parseInt(secondField);
 
                         } else if (FLAG.equals("PM")) {//PING MATRIX{
-                            System.out.println("ENTERING PM");
+                            //System.out.println("ENTERING PM");
                             String timeStamp = firstField;
                             String secondField = token.nextToken().trim();
                             String ipOfSender = secondField;
@@ -221,19 +230,20 @@ public class Ringo {
                             //System.out.println("PING MATRIX timestamp : " + timeStamp + " ipOfSender : " + ipOfSender + " port " + port);
                             replyToMatrix(timeStamp, ipOfSender, port);
                         } else if (FLAG.equals("MR")) {
-                            System.out.println("ENTERING MR");
+                            //System.out.println("ENTERING MR");
                             //populate matrix
 
                             String timeStamp = firstField;
                             String secondField = token.nextToken().trim();
                             String ipOfSender = secondField;
                             String port = token.nextToken();
+                            String type = token.nextToken();
                             int pingerTime = Math.abs(Integer.parseInt(timeStamp));
-                            matrixRingos.put(new ringoAddr(ipOfSender, RINGOID, Integer.parseInt(port.trim())), pingerTime);
+                            matrixRingos.put(new ringoAddr(ipOfSender, RINGOID, Integer.parseInt(port.trim()), type), pingerTime);
                             //System.out.println("Recieved new RTT");
 
                         } else if (FLAG.equals("M")) {
-                            System.out.println("ENTERING M");
+                            //System.out.println("ENTERING M");
                             matrixReplies++;
 
                             String[] guest = new String[n + 2];
@@ -250,21 +260,29 @@ public class Ringo {
                             if (matrixRingos.size() == n) {
 
                             }
-                            
-                            System.out.println(Arrays.deepToString(matrix));
+
+                            //System.out.println(Arrays.deepToString(matrix));
                             //System.out.println(firstField);
                             //System.out.println(secondField);
+                        } else if (FLAG.equals("I")) { //INFORMATION PACKETS FOR DATA
+                            fileExtension = firstField;
+                            fileLength = Long.valueOf(token.nextToken().trim());
+                            System.out.println("INCOMING PACKET OF TYPE " + fileExtension + " OF LENGTH " + fileLength);
+                        } else {//RESERVED FOR DATA PACKETS BECAUSE WE CANNOT CONCATENATE STRINGS
+                            System.out.println("Recieved Data Packet!");
+                            System.out.println("Packet contained: " );
+                            System.out.println(new String(packetInfo));
                         }
 
 
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        //e.printStackTrace();
                     }
 
                     //KATIE
-                    System.out.println("My ringos online " + knownRingos.size());
+                    //System.out.println("There are currently " + knownRingos.size() + " Ringos online.");
                     if (knownRingos.size() == n && !calculatedPing) {
-                        System.out.println("sending RTTs for matrix");
+                        //System.out.println("sending RTTs for matrix");
                         for (Map.Entry<ringoAddr, Integer> entry : knownRingos.entrySet()) {
                             if (num_iters >= n) {
                                 //System.out.println("BREAKING LOOP");
@@ -289,9 +307,9 @@ public class Ringo {
                             String ms = "PM " + msSend + " " + ip + " " + PORT_NUMBER;
                             byte[] buf = ms.getBytes();
                             try {
-                                System.out.println("************************************");
-                                System.out.println("sendport " + port + " myip " + ip);
-                                System.out.println("************************************");
+                                //System.out.println("************************************");
+                                //System.out.println("sendport " + port + " myip " + ip);
+                                //System.out.println("************************************");
                                 DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getByName(ip), port);
                                 try {
                                     num_iters++;
@@ -343,10 +361,7 @@ public class Ringo {
                 System.out.println("Going offline for " + time + " seconds.");
             } else if (command.equals("send")) {
                 String filename = token.nextToken();
-
-                byte[] buf = new byte[PACKET_SIZE];
-
-                System.out.println("Sending " + filename);
+                sendData(filename);
 
             } else if (command.equals("show-matrix")) {
                 System.out.print("     ");
@@ -397,7 +412,7 @@ public class Ringo {
                         //System.out.println("my ip " + ip + " my port " + port + " id " + id);
 
                         Integer ping = otherRingos.getValue();
-                        System.out.println("Ringo @ " + ip + ":" + port + " with ping ~" + ping + " ms.");
+                        System.out.println("Ringo @ " + ip + ":" + port + " with ping ~" + ping + " ms. of type " + ra.getType());
                     }
                 } else {
                     System.out.println("Connect the number of Ringos equal to N first.");
@@ -433,7 +448,7 @@ public class Ringo {
             if ((ping == 99999)) {
                 count = i + 1;
             }
-            System.out.println("Ringo @ " + ip + ":" + port + " with ping ~" + ping + " ms.");
+            //System.out.println("Ringo @ " + ip + ":" + port + " with ping ~" + ping + " ms.");
             i++;
         }
 
@@ -448,7 +463,7 @@ public class Ringo {
         }
 
         try {
-            s = s + " " + InetAddress.getLocalHost().getHostAddress() + " " + PORT_NUMBER;
+            s = s + " " + InetAddress.getLocalHost().getHostAddress() + " " + PORT_NUMBER + " " + flag;
         } catch (Exception e) {
             //
         }
@@ -459,7 +474,7 @@ public class Ringo {
 
                 ringoAddr ra = known.getKey();
                 if (!(ra.getIP().equals(InetAddress.getLocalHost()) && (ra.getPort() != PORT_NUMBER))) {
-                    System.out.println("SENDING VECTOR TO " + ra.getIP() + ":" + ra.getPort());
+                    //System.out.println("SENDING VECTOR TO " + ra.getIP() + ":" + ra.getPort());
                     InetAddress target = InetAddress.getByName(ra.getIP());
                     DatagramPacket packet = new DatagramPacket(info, info.length, InetAddress.getByName(ra.getIP()), ra.getPort());
                     try {
@@ -484,12 +499,12 @@ public class Ringo {
         long msSend = now.getTime();
         RINGOID = ringosOnline;
 
-        String ms = "P " + msSend + " " + PORT_NUMBER + " " + ip;
+        String ms = "P " + msSend + " " + PORT_NUMBER + " " + ip + " " + flag;
         byte[] buf = ms.getBytes();
         try {
             InetAddress poc = InetAddress.getByName(POC_NAME);
             DatagramPacket packet = new DatagramPacket(buf, buf.length, poc, POC_PORT);
-            System.out.println("My packet contains ipaddr " + poc + " and port " + POC_PORT);
+            //System.out.println("My packet contains ipaddr " + poc + " and port " + POC_PORT);
             try {
                 ds.send(packet);
             } catch (Exception e) {
@@ -500,21 +515,21 @@ public class Ringo {
         }
     }
 
-    public static void recievePing(String pingTime, String senderIP, String senderPort) {
+    public static void recievePing(String pingTime, String senderIP, String senderPort, String type) {
 
         Date now = new Date();
         long cur = now.getTime();
 
         long RTT = Long.valueOf(pingTime) - cur;
         RTT *= 2;
-        System.out.println("my round trip time " + RTT);
+        //System.out.println("my round trip time " + RTT);
 
         //commenting this out for now to get basic functionality back
-        ringoAddr testRA = new ringoAddr(senderIP, ringosOnline, Integer.parseInt(senderPort));
+        ringoAddr testRA = new ringoAddr(senderIP, ringosOnline, Integer.parseInt(senderPort), type);
         if (!(knownRingos.containsKey(testRA))) {
             try {
                 //System.out.println("ADDING TO KNOWN RINGOS : senderIP " + senderIP + " ringosOnline " + ringosOnline + " senderPort " + senderPort);
-                knownRingos.put(new ringoAddr(senderIP, ringosOnline, Integer.parseInt(senderPort)), Math.abs((int) RTT));
+                knownRingos.put(new ringoAddr(senderIP, ringosOnline, Integer.parseInt(senderPort), type), Math.abs((int) RTT));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -552,7 +567,7 @@ public class Ringo {
 
                 //System.out.println("PRINTING VALUES IN BROADCAST RINGOS PACKET " + " ip " + ip + " id " + id + " port " + myport);
 
-                String keyValue = ("E " + ip + " " + id + " " + myport);
+                String keyValue = ("E " + ip + " " + id + " " + myport + " " + ra.getType());
                 byte[] ringMap = keyValue.getBytes();
 
                 for (Map.Entry<ringoAddr, Integer> key: knownRingos.entrySet()) {
@@ -567,48 +582,92 @@ public class Ringo {
                     }
                     
                 }
-                System.out.println("\n There are currently " + knownRingos.size() + " Ringos online.");
+                //System.out.println("\n There are currently " + knownRingos.size() + " Ringos online.");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static void acceptRingos(String ringoIP, String ringoID, String port, int ping) {
+    public static void acceptRingos(String ringoIP, String ringoID, String port, int ping, String type) {
         try {
-            ringoAddr testRA = new ringoAddr(ringoIP.trim(), Integer.parseInt(ringoID.trim()), Integer.parseInt(port.trim()));
+            ringoAddr testRA = new ringoAddr(ringoIP.trim(), Integer.parseInt(ringoID.trim()), Integer.parseInt(port.trim()), type);
             //System.out.println("KNOWN RINGOS AT THIS POINT IN TIME: " + knownRingos);
             if (!(knownRingos.containsKey(testRA))) {
                 //System.out.println("ADDING NEW RINGO " + testRA.getIP() + ":" + testRA.getPort());
-                knownRingos.put(new ringoAddr(ringoIP.trim(), Integer.parseInt(ringoID.trim()), Integer.parseInt(port.trim())), Math.abs(ping));
+                knownRingos.put(new ringoAddr(ringoIP.trim(), Integer.parseInt(ringoID.trim()), Integer.parseInt(port.trim()), type), Math.abs(ping));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static void calculateRing() {
-        //System.out.println(Arrays.toString(intMatrix));
+    public static void sendData(String filename) {
 
-        int[] lowestInRows = new int[n];
-        int counter = 0;
-        int j = 2;
+        //ASSUMING THIS METHOD IS ONLY BEING RUN BY THE SENDER
+        byte[] fileAsArray = null;
+        String extension = "";
 
-        for (int i = 0; i < n; i++) {
-            j = j - 1;
-            for (; j < n; j++) {
+        int i = filename.lastIndexOf('.');
+        if (i > 0) {
+            extension = filename.substring(i+1);
+        }
 
-                int curValue = intMatrix[i][j];
-                if (curValue == 99999) {
-                    break;
-                }
-                System.out.println("The shortest path from ringo " + i + " to Ringo  " + j + " is " + curValue +" ms.");
-                counter++;
+        try {
+            fileAsArray = Files.readAllBytes(new File(filename).toPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String destinationIP = "";
+        int destinationPort = 0;
+
+        for (Map.Entry<ringoAddr, Integer> key: knownRingos.entrySet()) {
+            //Don't send to itself.
+            ringoAddr ra = key.getKey();
+
+            //FOUND THE DESTINATION
+            if (ra.getType().equals("R")) {
+                destinationIP = ra.getIP();
+                destinationPort = ra.getPort();
+                break;
             }
         }
 
-        calculatedRing = true;
+
+
+        if (destinationIP == "") {
+            System.out.println("No ringo could be detected as a reciever.");
+            return;
+        } else {
+            try {
+                String info = "I " + extension + " " + fileAsArray.length;
+                byte[] infoToBytes = info.getBytes();
+                DatagramPacket infoPacket = new DatagramPacket(infoToBytes, infoToBytes.length, InetAddress.getByName(destinationIP), destinationPort);
+                ds.send(infoPacket);
+                DatagramPacket dataPacket = new DatagramPacket(fileAsArray, fileAsArray.length, InetAddress.getByName(destinationIP), destinationPort);
+                ds.send(dataPacket);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
+
+    public void sendDummy() {
+        //TODO: Send a dummy packet to other Ringos in the network to see if they are alive.
+        //Might not be in Milestone 2.
+    }
+
+    public void recieveDummy() {
+        //TODO: Send a dummy packet to other Ringos in the network to see if they are alive.
+        //Might not be in Milestone 2.
+    }
+
+
+
+
+
+
 
     public static void printStats() {
         System.out.println("******************************");
@@ -655,32 +714,9 @@ public class Ringo {
         }
     }
 
-    public void sendDummy() {
-        //TODO: Send a dummy packet to other Ringos in the network to see if they are alive.
-        //Might not be in Milestone 2.
-    }
 
-    public void recieveDummy() {
-        //TODO: Ping other ringos in the network. Calculate RTT through timestamp.
-    }
 
-    public static int[][] makeIdealMatrix(String[][] matrix) {
-        int[][] newMatrix = new int[n][n];
-        for (int i = 0; i < n; i++) {
-            //System.out.print(i + ") [");
-            for (int j = 0; j < n; j++) {
-                System.out.print(matrix[i][j] + "     ");
-                newMatrix[i][j] = Integer.parseInt(matrix[i][j]);
-//                if (newMatrix[i][j] == 99999){
-//                    newMatrix[i][j] = 0;
-//                }
-                newMatrix[i][j] = (newMatrix[i][j] + newMatrix[j][i]) / 2;
-                newMatrix[j][i] = (newMatrix[i][j] + newMatrix[j][i]) / 2;
-            }
-        }
-        printMatrix(newMatrix);
-        return newMatrix;
-    }
+
     //    final static int NO_PARENT = -1;
     public static void dijkstra(String[][] graph, int src, boolean showOutput) {
         //TODO: Construct shortest path among all Ringos in the network.
@@ -720,10 +756,6 @@ public class Ringo {
         }
     }
 
-    public void sendPacket(Ringo r) {
-        //TODO: Send a packet to another Ringo in the network.
-    }
-
     public static void parseCmd(String[] args) {
         if (args.length != 5) {
             System.out.println(cmdError);
@@ -746,23 +778,6 @@ public class Ringo {
                 System.out.println(cmdError);
                 System.exit(-1);
             }
-        }
-    }
-
-    //TAKEN FROM JAVA2S
-    public static byte[] convertIntegersToBytes (int[] integers) {
-        if (integers != null) {
-            byte[] outputBytes = new byte[integers.length * 4];
-
-            for(int i = 0, k = 0; i < integers.length; i++) {
-                int integerTemp = integers[i];
-                for(int j = 0; j < 4; j++, k++) {
-                    outputBytes[k] = (byte)((integerTemp >> (8 * j)) & 0xFF);
-                }
-            }
-            return outputBytes;
-        } else {
-            return null;
         }
     }
 }
