@@ -97,8 +97,18 @@ public class Ringo {
         @Override
         public boolean equals(Object o1) {
             ringoAddr ra = (ringoAddr) o1;
-            return this.getPort() == ra.getPort();
+            return (IP_ADDR.equals(ra.getIP())) && (ra.getPort() == port);
         }
+        
+        @Override
+        public int hashCode(){
+            int hashcode = 0;
+            hashcode = IP_ADDR.hashCode()*20;
+            hashcode += port;
+            return hashcode;
+        }
+        
+        
     }
 
 
@@ -139,7 +149,7 @@ public class Ringo {
                 String hostIP = address.getHostAddress();
 
                 //add yourself to known ringos
-                knownRingos.put(new ringoAddr(hostIP, 0, PORT_NUMBER), 99999);
+                //knownRingos.put(new ringoAddr(hostIP, 0, PORT_NUMBER), 99999);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -160,26 +170,26 @@ public class Ringo {
                         byte[] packetInfo = new byte[1024];
                         InetAddress address = InetAddress.getLocalHost();
                         String hostIP = address.getHostAddress();
-                        System.out.println( "Receiving on IP: " + hostIP + "\n" + "Name: " + hostIP);
+                        //System.out.println( "Receiving on IP: " + hostIP + "\n" + "Name: " + hostIP);
                         DatagramPacket recieve = //Recieves Ping request at this Ringo's Port number.
                                 new DatagramPacket(packetInfo, packetInfo.length, InetAddress.getByName(hostIP), PORT_NUMBER);
                         ds.receive(recieve);
 
                         String packetData = new String(packetInfo);
-                        System.out.println("RECIEVED PACKET CONTAINING " + packetData);
+                        //System.out.println("RECIEVED PACKET CONTAINING " + packetData);
                         StringTokenizer token = new StringTokenizer(packetData);
 
                         String FLAG = token.nextToken().trim();
-                        System.out.println("my flag " + FLAG);
+                        //System.out.println("my flag " + FLAG);
                         String firstField = token.nextToken().trim();
-                        System.out.println("firstField " + firstField);
+                        //System.out.println("firstField " + firstField);
 
                         if (FLAG.equals("P")) {
-                            System.out.println("ENTERING P");
+                            //System.out.println("ENTERING P");
                             String secondField = token.nextToken().trim();
                             String thirdField = token.nextToken().trim();
-                            System.out.println("secondField in Ping " + secondField);
-                            System.out.println("thirdField in Ping " + thirdField);
+                            //System.out.println("secondField in Ping " + secondField);
+                            //System.out.println("thirdField in Ping " + thirdField);
                             //System.out.println("\n\nA new Ringo has requested to ping you.");
                             if (calculatedPing == true) {
                                 //System.out.println("PING RECIEVED FOR MATRIX");
@@ -187,13 +197,13 @@ public class Ringo {
 
                             recievePing(firstField, thirdField, secondField);
                         } else if (FLAG.equals("E")) {
-                            System.out.println("ENTERING E");
+                            //System.out.println("ENTERING E");
                             String secondField = token.nextToken().trim();
-                            System.out.println("secondField in Exchange " + secondField);
+                            //System.out.println("secondField in Exchange " + secondField);
                             String thirdField = token.nextToken();
-                            System.out.println("thirdField in Exchange " + thirdField);
+                           // System.out.println("thirdField in Exchange " + thirdField);
                             acceptRingos(firstField, secondField, thirdField, ping);
-                            System.out.println("A Ringo is exchanging information with you...");
+                            //System.out.println("A Ringo is exchanging information with you...");
 
                         } else if (FLAG.equals("PR")) {
                             System.out.println("ENTERING PR");
@@ -220,7 +230,7 @@ public class Ringo {
                             String port = token.nextToken();
                             int pingerTime = Math.abs(Integer.parseInt(timeStamp));
                             matrixRingos.put(new ringoAddr(ipOfSender, RINGOID, Integer.parseInt(port.trim())), pingerTime);
-                            System.out.println("Recieved new RTT");
+                            //System.out.println("Recieved new RTT");
 
                         } else if (FLAG.equals("M")) {
                             System.out.println("ENTERING M");
@@ -240,6 +250,8 @@ public class Ringo {
                             if (matrixRingos.size() == n) {
 
                             }
+                            
+                            System.out.println(Arrays.deepToString(matrix));
                             //System.out.println(firstField);
                             //System.out.println(secondField);
                         }
@@ -293,7 +305,7 @@ public class Ringo {
                             }
                         }
                         //System.out.println("Current Ring = " + Arrays.toString(vector));
-                        if (matrixRingos.size() == n) {
+                        if (knownRingos.size() == n) {
                             initializeVector();
                         }
 
@@ -382,7 +394,7 @@ public class Ringo {
                         String ip = ra.getIP();
                         int port = ra.getPort();
                         int id = ra.getID();
-                        System.out.println("my ip " + ip + " my port " + port + " id " + id);
+                        //System.out.println("my ip " + ip + " my port " + port + " id " + id);
 
                         Integer ping = otherRingos.getValue();
                         System.out.println("Ringo @ " + ip + ":" + port + " with ping ~" + ping + " ms.");
@@ -404,6 +416,7 @@ public class Ringo {
     }
 
     public static void initializeVector() {
+        
 
         vector = new String[n];
         int i = 0;
@@ -445,14 +458,16 @@ public class Ringo {
             try {
 
                 ringoAddr ra = known.getKey();
-                System.out.println("SENDING VECTOR TO " + ra.getIP() + ":" + known.getValue());
-                InetAddress target = InetAddress.getByName(ra.getIP());
-                DatagramPacket packet = new DatagramPacket(info, info.length, InetAddress.getByName(ip), known.getValue());
-                try {
-                    ds.send(packet);
-                    //System.out.println("Sent vector!");
-                } catch (Exception e) {
-                    e.printStackTrace();
+                if (!(ra.getIP().equals(InetAddress.getLocalHost()) && (ra.getPort() != PORT_NUMBER))) {
+                    System.out.println("SENDING VECTOR TO " + ra.getIP() + ":" + ra.getPort());
+                    InetAddress target = InetAddress.getByName(ra.getIP());
+                    DatagramPacket packet = new DatagramPacket(info, info.length, InetAddress.getByName(ra.getIP()), ra.getPort());
+                    try {
+                        ds.send(packet);
+                        //System.out.println("Sent vector!");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -495,14 +510,15 @@ public class Ringo {
         System.out.println("my round trip time " + RTT);
 
         //commenting this out for now to get basic functionality back
-        //if (!(knownRingos.containsValue(Integer.parseInt(senderPort.trim())))) {
+        ringoAddr testRA = new ringoAddr(senderIP, ringosOnline, Integer.parseInt(senderPort));
+        if (!(knownRingos.containsKey(testRA))) {
             try {
-                System.out.println("senderIP " + senderIP + " ringosOnline " + ringosOnline + " senderPort " + senderPort);
-                knownRingos.put(new ringoAddr(senderIP, ringosOnline, Integer.parseInt(senderPort)), (int) RTT);
+                //System.out.println("ADDING TO KNOWN RINGOS : senderIP " + senderIP + " ringosOnline " + ringosOnline + " senderPort " + senderPort);
+                knownRingos.put(new ringoAddr(senderIP, ringosOnline, Integer.parseInt(senderPort)), Math.abs((int) RTT));
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        //}
+        }
 
         ringosOnline += 1;
 
@@ -511,7 +527,7 @@ public class Ringo {
 
 
         try {
-            System.out.println("sending at ip address " + senderIP + "port number " + senderPort);
+            //System.out.println("sending at ip address " + senderIP + "port number " + senderPort);
             DatagramPacket dp = new DatagramPacket(send, send.length, InetAddress.getByName(senderIP), Integer.parseInt(senderPort.trim()));
             ds.send(dp);
             //System.out.println("You have sent the requesting Ringo a reply.\n");
@@ -525,7 +541,7 @@ public class Ringo {
 
     public static void broadcastRingos(InetAddress ipAddr, int portNum) {
         try {
-            System.out.println("Broadcasting my known Ringos " + knownRingos);
+            //System.out.println("Broadcasting my known Ringos " + knownRingos);
             int i = 0;
             for (Map.Entry<ringoAddr, Integer> entry : knownRingos.entrySet()) {
                 ringoAddr ra = entry.getKey();
@@ -534,20 +550,23 @@ public class Ringo {
                 int id = ra.getID();
                 int myport = ra.getPort();
 
-                System.out.println("PRINTING VALUES IN BROADCAST RINGOS PACKET " + " ip " + ip + " id " + id + " port " + myport);
+                //System.out.println("PRINTING VALUES IN BROADCAST RINGOS PACKET " + " ip " + ip + " id " + id + " port " + myport);
 
                 String keyValue = ("E " + ip + " " + id + " " + myport);
                 byte[] ringMap = keyValue.getBytes();
 
-                //for (Integer port : knownRingos.values()) {
-                //Don't send to itself.
-                DatagramPacket mapPacket =
-                        new DatagramPacket(ringMap, ringMap.length, ipAddr, portNum);
-                if (myport == PORT_NUMBER) {
-                    System.out.println("SENDING EXCHANGES to ipAddr " + ipAddr + "and port " + portNum);
-                    ds.send(mapPacket);
+                for (Map.Entry<ringoAddr, Integer> key: knownRingos.entrySet()) {
+                    //Don't send to itself.
+                    
+                    if (!(key.getKey().getIP().equals(ip) && !(key.getKey().getPort() != myport))) {
+                        DatagramPacket mapPacket =
+                            new DatagramPacket(ringMap, ringMap.length, InetAddress.getByName(key.getKey().getIP()), key.getKey().getPort());
+                  
+                        //System.out.println("SENDING EXCHANGES to ipAddr " + key.getKey().getIP() + "and port " + key.getKey().getPort());
+                        ds.send(mapPacket);
+                    }
+                    
                 }
-                //}
                 System.out.println("\n There are currently " + knownRingos.size() + " Ringos online.");
             }
         } catch (Exception e) {
@@ -557,17 +576,19 @@ public class Ringo {
 
     public static void acceptRingos(String ringoIP, String ringoID, String port, int ping) {
         try {
-            //if (!(knownRingos.containsKey(ringoAddr.getID())) {
-                System.out.println("PING TIME IN ACCEPT RINGOS " + ping);
-                knownRingos.put(new ringoAddr(ringoIP.trim(), Integer.parseInt(ringoID.trim()), Integer.parseInt(port.trim())), ping);
-            //}
+            ringoAddr testRA = new ringoAddr(ringoIP.trim(), Integer.parseInt(ringoID.trim()), Integer.parseInt(port.trim()));
+            //System.out.println("KNOWN RINGOS AT THIS POINT IN TIME: " + knownRingos);
+            if (!(knownRingos.containsKey(testRA))) {
+                //System.out.println("ADDING NEW RINGO " + testRA.getIP() + ":" + testRA.getPort());
+                knownRingos.put(new ringoAddr(ringoIP.trim(), Integer.parseInt(ringoID.trim()), Integer.parseInt(port.trim())), Math.abs(ping));
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public static void calculateRing() {
-        System.out.println(Arrays.toString(intMatrix));
+        //System.out.println(Arrays.toString(intMatrix));
 
         int[] lowestInRows = new int[n];
         int counter = 0;
