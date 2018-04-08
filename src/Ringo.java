@@ -29,6 +29,7 @@ public class Ringo {
 
     public static int ping;
     public static int RINGOID;
+    public static int sequenceNum;
     public static boolean calculatedPing = false;
     public static boolean calculatedRing = false;
     public static int num_iters = 0;
@@ -38,6 +39,7 @@ public class Ringo {
 
     public static Map<ringoAddr, Integer> knownRingos;
     public static Map<ringoAddr, Integer> matrixRingos;
+    public static Map<Integer, String[]> sendRingos;
 
     public static Thread checkForPackets;
 
@@ -105,7 +107,7 @@ public class Ringo {
             ringoAddr ra = (ringoAddr) o1;
             return (IP_ADDR.equals(ra.getIP())) && (ra.getPort() == port);
         }
-        
+
         @Override
         public int hashCode(){
             int hashcode = 0;
@@ -113,8 +115,8 @@ public class Ringo {
             hashcode += port;
             return hashcode;
         }
-        
-        
+
+
     }
 
 
@@ -132,7 +134,6 @@ public class Ringo {
         printStats();
 
         knownRingos = new HashMap<ringoAddr, Integer>();
-        matrixRingos = new TreeMap<ringoAddr, Integer>();
         calculatedPing = false;
 
         matrix = new String[n][n + 2];
@@ -210,7 +211,7 @@ public class Ringo {
                             //System.out.println("secondField in Exchange " + secondField);
                             String thirdField = token.nextToken();
                             String type = token.nextToken();
-                           // System.out.println("thirdField in Exchange " + thirdField);
+                            // System.out.println("thirdField in Exchange " + thirdField);
                             acceptRingos(firstField, secondField, thirdField, ping, type);
                             //System.out.println("A Ringo is exchanging information with you...");
 
@@ -338,7 +339,7 @@ public class Ringo {
                         }
                     }
                     if (!(matrixNull) && !calculatedRing) {
-                        dijkstra(matrix, PORT_NUMBER, false);
+                        makeIdealMatrix(matrix, PORT_NUMBER, false);
                         //calculateRing();
                     }
                 }
@@ -392,10 +393,17 @@ public class Ringo {
                 }
 
             } else if (command.equals("show-ring")) {
-                dijkstra(matrix, PORT_NUMBER, true);
+                makeIdealMatrix(matrix, PORT_NUMBER, true);
                 System.out.println("\nthe nodes visited are as follows");
                 TSPNearestNeighbor tspNearestNeighbour = new TSPNearestNeighbor();
-                tspNearestNeighbour.tsp(intMatrix);
+                Stack<Integer> tmpStack = new Stack<>();
+                System.out.println(intMatrix);
+                tmpStack = tspNearestNeighbour.tsp(intMatrix);
+                System.out.print(0 + "\t");
+                while (!tmpStack.isEmpty()) {
+                    int dst = tmpStack.pop();
+                    System.out.print(dst + "\t");
+                }
                 System.out.println("\n******************************");
             } else if (command.equals("disconnect")) {
                 System.out.println("Exiting...");
@@ -412,7 +420,7 @@ public class Ringo {
                         //System.out.println("my ip " + ip + " my port " + port + " id " + id);
 
                         Integer ping = otherRingos.getValue();
-                        System.out.println("Ringo @ " + ip + ":" + port + " with ping ~" + ping + " ms. of type " + ra.getType());
+                        System.out.println("Ringo @ " + ip + ":" + port + " with ping ~" + ping + " ms. with ID " + ra.getID() + " of type " + ra.getType());
                     }
                 } else {
                     System.out.println("Connect the number of Ringos equal to N first.");
@@ -431,7 +439,7 @@ public class Ringo {
     }
 
     public static void initializeVector() {
-        
+
 
         vector = new String[n];
         int i = 0;
@@ -572,15 +580,15 @@ public class Ringo {
 
                 for (Map.Entry<ringoAddr, Integer> key: knownRingos.entrySet()) {
                     //Don't send to itself.
-                    
+
                     if (!(key.getKey().getIP().equals(ip) && !(key.getKey().getPort() != myport))) {
                         DatagramPacket mapPacket =
-                            new DatagramPacket(ringMap, ringMap.length, InetAddress.getByName(key.getKey().getIP()), key.getKey().getPort());
-                  
+                                new DatagramPacket(ringMap, ringMap.length, InetAddress.getByName(key.getKey().getIP()), key.getKey().getPort());
+
                         //System.out.println("SENDING EXCHANGES to ipAddr " + key.getKey().getIP() + "and port " + key.getKey().getPort());
                         ds.send(mapPacket);
                     }
-                    
+
                 }
                 //System.out.println("\n There are currently " + knownRingos.size() + " Ringos online.");
             }
@@ -607,10 +615,18 @@ public class Ringo {
         //ASSUMING THIS METHOD IS ONLY BEING RUN BY THE SENDER
         byte[] fileAsArray = null;
         String extension = "";
+        Stack<Integer> stack = new Stack<Integer>();
+        makeIdealMatrix(matrix, PORT_NUMBER, true);
+        TSPNearestNeighbor tspNearestNeighbour = new TSPNearestNeighbor();
+        stack = tspNearestNeighbour.tsp(intMatrix);
+
+
+        //linkedList myLinkedList = new linkedList();
+        stack.push(0);
 
         int i = filename.lastIndexOf('.');
         if (i > 0) {
-            extension = filename.substring(i+1);
+            extension = filename.substring(i + 1);
         }
 
         try {
@@ -621,21 +637,58 @@ public class Ringo {
 
         String destinationIP = "";
         int destinationPort = 0;
+//        ArrayList<Integer> sendList = new ArrayList<>();
+//        while (!stack.isEmpty()) {
+//            int myID = stack.pop();
+//            myLinkedList.insertAtEnd(myID);
+//        }
+//        myLinkedList.display();
+        String[][] a = new String[matrix.length][matrix.length];
+        for (int j = 0; j < matrix.length; j++) {
+            a[j] = Arrays.copyOfRange(matrix[j], n, n + 2);
+        }
+        System.out.println(a[0]);
+        //Arrays.deepToString(a[1]);
 
-        for (Map.Entry<ringoAddr, Integer> key: knownRingos.entrySet()) {
+        for (int j = 0; j < n; j++) {
+            System.out.println("Row/Column " + j + " refers to Ringo " + Arrays.deepToString(a[j]));
+            //System.out.println(j);
+            sendRingos.put(0, a[0]);
+        }
+        //Map.Entry<Integer, String[]> key;
+        String[] portAddr;
+        int myID = 0;
+        while (!stack.isEmpty()) {
+            myID = stack.pop();
+            for (Map.Entry<Integer, String[]> mykey : sendRingos.entrySet()) {
+                if (myID == mykey.getKey()) {
+                    portAddr = mykey.getValue();
+                    //destinationIP = portAddr[0];
+                    System.out.println("destinationIP " + portAddr);
+                    //System.out.println("destinationPort " + portAddr[1]);
+                    //destinationPort = Integer.parseInt(portAddr[1]);
+                }
+            }
+        }
+
+
+        for (Map.Entry<ringoAddr, Integer> key : knownRingos.entrySet()) {
             //Don't send to itself.
             ringoAddr ra = key.getKey();
+            System.out.println(ra.getID());
+            System.out.println(ra.getIP());
+            System.out.println(ra.getPort());
+            //System.out.println(ra.getID() == myID);
+//              String mystring = ra.getType();
+
 
             //FOUND THE DESTINATION
-            if (ra.getType().equals("R")) {
+            if (myID == ra.getID()) {
                 destinationIP = ra.getIP();
                 destinationPort = ra.getPort();
                 break;
             }
         }
-
-
-
         if (destinationIP == "") {
             System.out.println("No ringo could be detected as a reciever.");
             return;
@@ -718,7 +771,7 @@ public class Ringo {
 
 
     //    final static int NO_PARENT = -1;
-    public static void dijkstra(String[][] graph, int src, boolean showOutput) {
+    public static void makeIdealMatrix(String[][] graph, int src, boolean showOutput) {
         //TODO: Construct shortest path among all Ringos in the network.
         //System.out.println(matrix.toString());
         int dist[] = new int[n]; // The output array. dist[i] will hold
