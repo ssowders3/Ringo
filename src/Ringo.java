@@ -26,6 +26,8 @@ public class Ringo {
     public static boolean isFirst = false;
     public static int ringosOnline = 0;
     public static String ip;
+    public static String MY_IP;
+    public static boolean myNeighborOnline = false;
 
     public static int ping;
     public static int RINGOID;
@@ -43,6 +45,7 @@ public class Ringo {
     public static Map<Integer, String[]> sendRingos;
 
     public static Thread checkForPackets;
+    public static int myIdxInA;
 
     public static String[] vector;
     public static String[][] matrix;
@@ -147,6 +150,13 @@ public class Ringo {
 
         if (!args[2].equals("0")) {
             sendPingPacket(); //IF THERE EXISTS A POC, PING IT.
+            try {
+                InetAddress address = InetAddress.getLocalHost();
+                System.out.println("My POC address " + address);
+                MY_IP = address.getHostAddress();
+            } catch (UnknownHostException E) {
+                E.printStackTrace();
+            }
 
         } else {
             ringosOnline = 1;
@@ -154,6 +164,7 @@ public class Ringo {
             try {
                 InetAddress address = InetAddress.getLocalHost();
                 System.out.println("My POC address " + address);
+                MY_IP = address.getHostAddress();
                 String hostIP = address.getHostAddress();
 
                 //add yourself to known ringos
@@ -192,6 +203,7 @@ public class Ringo {
                         //System.out.println("my flag " + FLAG);
                         String firstField = token.nextToken().trim();
                         //System.out.println("firstField " + firstField);
+                        //System.out.println("PACKET OF TYPE: " + FLAG);
 
                         if (FLAG.equals("P")) {
                             //System.out.println("ENTERING P");
@@ -278,6 +290,29 @@ public class Ringo {
                                 System.out.println("FORWARDING INFO PACKET");
                                 forwardData(sending.getBytes(), numRemoves + 1);
                             }
+                        } else if (FLAG.equals("C")) {
+
+                            String senderIP = firstField;
+                            int senderPort = Integer.parseInt(token.nextToken().trim());
+                            //System.out.println(senderIP + " is checking to see if I'm alive");
+                            String send = "CR " + MY_IP + " " + PORT_NUMBER;
+                            byte[] sendData = send.getBytes();
+
+                            try {
+                                DatagramPacket infoPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(senderIP), (senderPort));
+                                //System.out.println("Sending ack packet to " + senderIP + ":" + senderPort);
+                                ds.send(infoPacket);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else if (FLAG.equals("CR")) {
+                            myNeighborOnline = true;
+                            if (myNeighborOnline) {
+                                System.out.println("RINGO " + (myIdxInA + 1) + " is online.");
+                            } else {
+                                System.out.println("RINGO " + (myIdxInA + 1) + " is offline.");
+                            }
+
                         } else {//RESERVED FOR DATA PACKETS BECAUSE WE CANNOT CONCATENATE STRINGS
                             if (!(flag.equals("R"))) {
                                 System.out.println("FORWARDING DATA");
@@ -344,7 +379,14 @@ public class Ringo {
                             TimerTask myTask = new TimerTask() {
                                 @Override
                                 public void run() {
-                                    //System.out.println("Checking if every Ringo is alive...");
+                                    myNeighborOnline = false;
+                                    keepAlive();
+//                                    try {
+//                                        wait(1000);
+//                                    } catch (Exception e) {
+//                                        e.printStackTrace();
+//                                    }
+
                                 }
                             };
 
@@ -761,14 +803,52 @@ public class Ringo {
 
     }
 
-    public void sendDummy() {
-        //TODO: Send a dummy packet to other Ringos in the network to see if they are alive.
-        //Might not be in Milestone 2.
-    }
+    public static void keepAlive() {
+        String[][] a = new String[matrix.length][matrix.length];
+        for (int j = 0; j < matrix.length; j++) {
+            a[j] = Arrays.copyOfRange(matrix[j], n, n + 2);
+        }
 
-    public void recieveDummy() {
-        //TODO: Send a dummy packet to other Ringos in the network to see if they are alive.
-        //Might not be in Milestone 2.
+        //System.out.println(Arrays.deepToString(a));
+
+//        System.out.println(MY_IP.trim());
+//        System.out.println(PORT_NUMBER);
+
+        int idx = 0;
+        for (int i = 0; i < n; i++) {
+//            System.out.println(MY_IP.trim() + " =? " + a[i][0].trim());
+//            System.out.println(MY_IP.trim() + " =? " + a[i][0].trim());
+//
+//            System.out.println(PORT_NUMBER == Integer.parseInt(a[i][1].trim()));
+//            System.out.println(MY_IP.trim() + " =? " + a[i][0].trim());
+
+            if (a[i][0].trim().equals(MY_IP) && Integer.parseInt(a[i][1].trim()) == (PORT_NUMBER)) {
+                idx = i;
+                break;
+            }
+        }
+
+        //System.out.println("I AM LOCATED IN INDEX " + idx);
+        myIdxInA = idx + 1;
+        if (myIdxInA == n) {
+            myIdxInA = 0;
+        }
+
+        String send = "C " + MY_IP.trim() + " " + PORT_NUMBER;
+        byte[] sendData = send.getBytes();
+
+        String sendingToIP = a[myIdxInA][0].trim();
+        int sendingToPort = Integer.parseInt(a[myIdxInA][1]);
+
+        //System.out.println("Checking to see if " + sendingToIP + ":" + sendingToPort);
+
+        try {
+            DatagramPacket infoPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(sendingToIP), sendingToPort);
+            ds.send(infoPacket);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
 
