@@ -47,7 +47,7 @@ public class Ringo {
     public static int matrixReplies;
 
     public static Map<ringoAddr, Integer> knownRingos;
-    //public static Map<ringoAddr, Integer> matrixRingos;
+    public static Map<ringoAddr, Integer> offlineRingos;
     //public static Map<Integer, String[]> sendRingos;
 
     public static Thread checkForPackets;
@@ -328,9 +328,8 @@ public class Ringo {
                             for (int j = 0; j < matrix.length; j++) {
                                 b[j] = Arrays.copyOfRange(matrix[j], n, n + 2);
                             }
-
 //                            System.out.println(" is equal to: ");
-//                            System.out.println(Arrays.deepToString(b));
+                            System.out.println(Arrays.deepToString(b));
                             String[] cur = b[(Integer.parseInt(firstField))];
                             String removeIP = cur[0];
                             String removePort = cur[1];
@@ -348,6 +347,10 @@ public class Ringo {
                                 if (entry.getKey().getIP().equals(removeIP.trim()) && entry.getKey().getPort() == Integer.parseInt(removePort.trim())) {
 //                                    System.out.println("IN IF");
                                     //System.out.println("removing " + entry.getkey().getPort());
+                                    int value = knownRingos.get(entry.getKey());
+                                    int myport = Integer.parseInt(removePort);
+                                    offlineRingos.put(new ringoAddr(removeIP, RINGOID, myport, entry.getKey().getType()), value);
+                                    //matrixRingos.put(new ringoAddr(ipOfSender, RINGOID, Integer.parseInt(port.trim()), type), pingerTime);
                                     knownRingos.remove(entry.getKey());
                                     n--;
                                     initializeVector();
@@ -371,26 +374,33 @@ public class Ringo {
                             String[] cur = c[(Integer.parseInt(firstField))];
                             String addIP = cur[0];
                             String addPort = cur[1];
+                            for (Map.Entry<ringoAddr, Integer> entry : knownRingos.entrySet()) {
+                                if (entry.getKey().getIP().equals(addIP.trim()) && entry.getKey().getPort() == Integer.parseInt(addPort.trim())) {
+                                    //offlineRingos.get()
+
+                                }
+
+                            }
 
                             //initializeVector();
 
-                            for (Map.Entry<ringoAddr, Integer> entry : knownRingos.entrySet()) {
-                                entry.getKey();
-                                //System.out.println("key " + entry.getKey());
-                                entry.getKey().getIP();
-
-//                                System.out.println("add " + entry.getKey().getIP());
-//                                System.out.println("add port " + entry.getKey().getPort());
-//                                System.out.println("ip " + (entry.getKey().getIP().equals(addIP.trim())));
-//                                System.out.println("port? " + (entry.getKey().getPort() == Integer.parseInt(addPort.trim())));
-                                if (entry.getKey().getIP().equals(addIP.trim()) && entry.getKey().getPort() == Integer.parseInt(addPort.trim())) {
-                                    //System.out.println("****************************");
-                                    //UNCOMMENT THIS TO SEE IT WHAT HAPPENS
-//                                    sendPingPacket();
-//                                    added = true;
-//                                    initializeVector();
-                                }
-                            }
+//                            for (Map.Entry<ringoAddr, Integer> entry : knownRingos.entrySet()) {
+//
+//                                //System.out.println("key " + entry.getKey());
+//
+////                                System.out.println("add " + entry.getKey().getIP());
+////                                System.out.println("add port " + entry.getKey().getPort());
+////                                System.out.println("ip " + (entry.getKey().getIP().equals(addIP.trim())));
+////                                System.out.println("port? " + (entry.getKey().getPort() == Integer.parseInt(addPort.trim())));
+//                                if (entry.getKey().getIP().equals(addIP.trim()) && entry.getKey().getPort() == Integer.parseInt(addPort.trim())) {
+//                                    //System.out.println("****************************");
+//
+//                                    //UNCOMMENT THIS TO SEE IT WHAT HAPPENS
+////                                    sendPingPacket();
+////                                    added = true;
+////                                    initializeVector();
+//                                }
+//                            }
                         } else {//RESERVED FOR DATA PACKETS BECAUSE WE CANNOT CONCATENATE STRINGS
                             if (!(flag.equals("R"))) {
                                 System.out.println("FORWARDING DATA");
