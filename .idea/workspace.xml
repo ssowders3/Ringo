@@ -2,6 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="76959ff3-a3e7-4659-8615-09191dc1d1ed" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Ringo$1.class" afterPath="$PROJECT_DIR$/src/Ringo$1.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Ringo$ringoAddr.class" afterPath="$PROJECT_DIR$/src/Ringo$ringoAddr.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Ringo.class" afterPath="$PROJECT_DIR$/src/Ringo.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Ringo.java" afterPath="$PROJECT_DIR$/src/Ringo.java" />
     </list>
@@ -26,22 +29,20 @@
       <file leaf-file-name="Ringo.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Ringo.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="292">
-              <caret line="346" column="38" lean-forward="false" selection-start-line="346" selection-start-column="38" selection-end-line="346" selection-end-column="38" />
+            <state relative-caret-position="768">
+              <caret line="846" column="0" lean-forward="false" selection-start-line="846" selection-start-column="0" selection-end-line="846" selection-end-column="0" />
               <folding>
-                <element signature="e#2638#2639#0" expanded="true" />
-                <element signature="e#2696#2697#0" expanded="true" />
-                <element signature="e#5184#15980#0" expanded="true" />
-                <element signature="e#15020#15292#0" expanded="true" />
-                <element signature="e#15291#15292#0" expanded="true" />
-                <element signature="e#15979#15980#0" expanded="true" />
+                <element signature="e#5717#19624#0" expanded="true" />
+                <element signature="e#16794#18936#0" expanded="true" />
+                <element signature="e#18609#18652#0" expanded="false" />
+                <element signature="e#18935#18936#0" expanded="true" />
+                <element signature="e#19623#19624#0" expanded="true" />
+                <element signature="e#20595#22041#0" expanded="true" />
+                <element signature="e#22040#22041#0" expanded="true" />
                 <element signature="method#initializeVector#0;class#Ringo#0" expanded="false" />
-                <element signature="method#sendPingPacket#0;class#Ringo#0" expanded="false" />
                 <element signature="method#recievePing#0;class#Ringo#0" expanded="false" />
-                <element signature="method#broadcastRingos#0;class#Ringo#0" expanded="false" />
                 <element signature="method#acceptRingos#0;class#Ringo#0" expanded="false" />
-                <element signature="method#printStats#0;class#Ringo#0" expanded="false" />
-                <element signature="method#replyToMatrix#0;class#Ringo#0" expanded="false" />
+                <element signature="method#forwardData#0;class#Ringo#0" expanded="false" />
                 <element signature="method#makeIdealMatrix#0;class#Ringo#0" expanded="false" />
                 <element signature="method#printMatrix#0;class#Ringo#0" expanded="false" />
                 <element signature="method#parseCmd#0;class#Ringo#0" expanded="false" />
@@ -56,7 +57,7 @@
             <state relative-caret-position="30">
               <caret line="3" column="116" lean-forward="false" selection-start-line="3" selection-start-column="116" selection-end-line="3" selection-end-column="116" />
               <folding>
-                <marker date="1523284947040" expanded="true" signature="1656:1662" ph="{...}" />
+                <marker date="1523542158207" expanded="true" signature="1656:1662" ph="{...}" />
               </folding>
             </state>
           </provider>
@@ -101,6 +102,13 @@
       <find>System.</find>
       <find>System.out</find>
       <find>sendRingos</find>
+      <find>new DatagramSock</find>
+      <find>Thread</find>
+      <find>mytask</find>
+      <find>task</find>
+      <find>task2</find>
+      <find>offline</find>
+      <find>IS OFFLINE</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -145,9 +153,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
-      <pane id="AndroidView" />
       <pane id="Scope" />
+      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -155,11 +162,17 @@
               <item name="RIngo" type="b2602c69:ProjectViewProjectNode" />
               <item name="Ringo" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="RIngo" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Ringo" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
       </pane>
       <pane id="Scratches" />
+      <pane id="AndroidView" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -581,12 +594,12 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/Ringo.java</url>
-          <line>854</line>
+          <line>1018</line>
           <properties />
           <option name="timeStamp" value="28" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="29" />
+      <option name="time" value="31" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -600,19 +613,17 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#2638#2639#0" expanded="true" />
-            <element signature="e#2696#2697#0" expanded="true" />
-            <element signature="e#5184#15980#0" expanded="true" />
-            <element signature="e#15020#15292#0" expanded="true" />
-            <element signature="e#15291#15292#0" expanded="true" />
-            <element signature="e#15979#15980#0" expanded="true" />
+            <element signature="e#5717#19624#0" expanded="true" />
+            <element signature="e#16794#18936#0" expanded="true" />
+            <element signature="e#18609#18652#0" expanded="false" />
+            <element signature="e#18935#18936#0" expanded="true" />
+            <element signature="e#19623#19624#0" expanded="true" />
+            <element signature="e#20595#22041#0" expanded="true" />
+            <element signature="e#22040#22041#0" expanded="true" />
             <element signature="method#initializeVector#0;class#Ringo#0" expanded="false" />
-            <element signature="method#sendPingPacket#0;class#Ringo#0" expanded="false" />
             <element signature="method#recievePing#0;class#Ringo#0" expanded="false" />
-            <element signature="method#broadcastRingos#0;class#Ringo#0" expanded="false" />
             <element signature="method#acceptRingos#0;class#Ringo#0" expanded="false" />
-            <element signature="method#printStats#0;class#Ringo#0" expanded="false" />
-            <element signature="method#replyToMatrix#0;class#Ringo#0" expanded="false" />
+            <element signature="method#forwardData#0;class#Ringo#0" expanded="false" />
             <element signature="method#makeIdealMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#printMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#parseCmd#0;class#Ringo#0" expanded="false" />
@@ -625,19 +636,17 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#2638#2639#0" expanded="true" />
-            <element signature="e#2696#2697#0" expanded="true" />
-            <element signature="e#5184#15980#0" expanded="true" />
-            <element signature="e#15020#15292#0" expanded="true" />
-            <element signature="e#15291#15292#0" expanded="true" />
-            <element signature="e#15979#15980#0" expanded="true" />
+            <element signature="e#5717#19624#0" expanded="true" />
+            <element signature="e#16794#18936#0" expanded="true" />
+            <element signature="e#18609#18652#0" expanded="false" />
+            <element signature="e#18935#18936#0" expanded="true" />
+            <element signature="e#19623#19624#0" expanded="true" />
+            <element signature="e#20595#22041#0" expanded="true" />
+            <element signature="e#22040#22041#0" expanded="true" />
             <element signature="method#initializeVector#0;class#Ringo#0" expanded="false" />
-            <element signature="method#sendPingPacket#0;class#Ringo#0" expanded="false" />
             <element signature="method#recievePing#0;class#Ringo#0" expanded="false" />
-            <element signature="method#broadcastRingos#0;class#Ringo#0" expanded="false" />
             <element signature="method#acceptRingos#0;class#Ringo#0" expanded="false" />
-            <element signature="method#printStats#0;class#Ringo#0" expanded="false" />
-            <element signature="method#replyToMatrix#0;class#Ringo#0" expanded="false" />
+            <element signature="method#forwardData#0;class#Ringo#0" expanded="false" />
             <element signature="method#makeIdealMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#printMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#parseCmd#0;class#Ringo#0" expanded="false" />
@@ -650,19 +659,17 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#2638#2639#0" expanded="true" />
-            <element signature="e#2696#2697#0" expanded="true" />
-            <element signature="e#5184#15980#0" expanded="true" />
-            <element signature="e#15020#15292#0" expanded="true" />
-            <element signature="e#15291#15292#0" expanded="true" />
-            <element signature="e#15979#15980#0" expanded="true" />
+            <element signature="e#5717#19624#0" expanded="true" />
+            <element signature="e#16794#18936#0" expanded="true" />
+            <element signature="e#18609#18652#0" expanded="false" />
+            <element signature="e#18935#18936#0" expanded="true" />
+            <element signature="e#19623#19624#0" expanded="true" />
+            <element signature="e#20595#22041#0" expanded="true" />
+            <element signature="e#22040#22041#0" expanded="true" />
             <element signature="method#initializeVector#0;class#Ringo#0" expanded="false" />
-            <element signature="method#sendPingPacket#0;class#Ringo#0" expanded="false" />
             <element signature="method#recievePing#0;class#Ringo#0" expanded="false" />
-            <element signature="method#broadcastRingos#0;class#Ringo#0" expanded="false" />
             <element signature="method#acceptRingos#0;class#Ringo#0" expanded="false" />
-            <element signature="method#printStats#0;class#Ringo#0" expanded="false" />
-            <element signature="method#replyToMatrix#0;class#Ringo#0" expanded="false" />
+            <element signature="method#forwardData#0;class#Ringo#0" expanded="false" />
             <element signature="method#makeIdealMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#printMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#parseCmd#0;class#Ringo#0" expanded="false" />
@@ -675,19 +682,17 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#2638#2639#0" expanded="true" />
-            <element signature="e#2696#2697#0" expanded="true" />
-            <element signature="e#5184#15980#0" expanded="true" />
-            <element signature="e#15020#15292#0" expanded="true" />
-            <element signature="e#15291#15292#0" expanded="true" />
-            <element signature="e#15979#15980#0" expanded="true" />
+            <element signature="e#5717#19624#0" expanded="true" />
+            <element signature="e#16794#18936#0" expanded="true" />
+            <element signature="e#18609#18652#0" expanded="false" />
+            <element signature="e#18935#18936#0" expanded="true" />
+            <element signature="e#19623#19624#0" expanded="true" />
+            <element signature="e#20595#22041#0" expanded="true" />
+            <element signature="e#22040#22041#0" expanded="true" />
             <element signature="method#initializeVector#0;class#Ringo#0" expanded="false" />
-            <element signature="method#sendPingPacket#0;class#Ringo#0" expanded="false" />
             <element signature="method#recievePing#0;class#Ringo#0" expanded="false" />
-            <element signature="method#broadcastRingos#0;class#Ringo#0" expanded="false" />
             <element signature="method#acceptRingos#0;class#Ringo#0" expanded="false" />
-            <element signature="method#printStats#0;class#Ringo#0" expanded="false" />
-            <element signature="method#replyToMatrix#0;class#Ringo#0" expanded="false" />
+            <element signature="method#forwardData#0;class#Ringo#0" expanded="false" />
             <element signature="method#makeIdealMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#printMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#parseCmd#0;class#Ringo#0" expanded="false" />
@@ -700,19 +705,17 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#2638#2639#0" expanded="true" />
-            <element signature="e#2696#2697#0" expanded="true" />
-            <element signature="e#5184#15980#0" expanded="true" />
-            <element signature="e#15020#15292#0" expanded="true" />
-            <element signature="e#15291#15292#0" expanded="true" />
-            <element signature="e#15979#15980#0" expanded="true" />
+            <element signature="e#5717#19624#0" expanded="true" />
+            <element signature="e#16794#18936#0" expanded="true" />
+            <element signature="e#18609#18652#0" expanded="false" />
+            <element signature="e#18935#18936#0" expanded="true" />
+            <element signature="e#19623#19624#0" expanded="true" />
+            <element signature="e#20595#22041#0" expanded="true" />
+            <element signature="e#22040#22041#0" expanded="true" />
             <element signature="method#initializeVector#0;class#Ringo#0" expanded="false" />
-            <element signature="method#sendPingPacket#0;class#Ringo#0" expanded="false" />
             <element signature="method#recievePing#0;class#Ringo#0" expanded="false" />
-            <element signature="method#broadcastRingos#0;class#Ringo#0" expanded="false" />
             <element signature="method#acceptRingos#0;class#Ringo#0" expanded="false" />
-            <element signature="method#printStats#0;class#Ringo#0" expanded="false" />
-            <element signature="method#replyToMatrix#0;class#Ringo#0" expanded="false" />
+            <element signature="method#forwardData#0;class#Ringo#0" expanded="false" />
             <element signature="method#makeIdealMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#printMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#parseCmd#0;class#Ringo#0" expanded="false" />
@@ -725,19 +728,17 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#2638#2639#0" expanded="true" />
-            <element signature="e#2696#2697#0" expanded="true" />
-            <element signature="e#5184#15980#0" expanded="true" />
-            <element signature="e#15020#15292#0" expanded="true" />
-            <element signature="e#15291#15292#0" expanded="true" />
-            <element signature="e#15979#15980#0" expanded="true" />
+            <element signature="e#5717#19624#0" expanded="true" />
+            <element signature="e#16794#18936#0" expanded="true" />
+            <element signature="e#18609#18652#0" expanded="false" />
+            <element signature="e#18935#18936#0" expanded="true" />
+            <element signature="e#19623#19624#0" expanded="true" />
+            <element signature="e#20595#22041#0" expanded="true" />
+            <element signature="e#22040#22041#0" expanded="true" />
             <element signature="method#initializeVector#0;class#Ringo#0" expanded="false" />
-            <element signature="method#sendPingPacket#0;class#Ringo#0" expanded="false" />
             <element signature="method#recievePing#0;class#Ringo#0" expanded="false" />
-            <element signature="method#broadcastRingos#0;class#Ringo#0" expanded="false" />
             <element signature="method#acceptRingos#0;class#Ringo#0" expanded="false" />
-            <element signature="method#printStats#0;class#Ringo#0" expanded="false" />
-            <element signature="method#replyToMatrix#0;class#Ringo#0" expanded="false" />
+            <element signature="method#forwardData#0;class#Ringo#0" expanded="false" />
             <element signature="method#makeIdealMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#printMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#parseCmd#0;class#Ringo#0" expanded="false" />
@@ -750,19 +751,17 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#2638#2639#0" expanded="true" />
-            <element signature="e#2696#2697#0" expanded="true" />
-            <element signature="e#5184#15980#0" expanded="true" />
-            <element signature="e#15020#15292#0" expanded="true" />
-            <element signature="e#15291#15292#0" expanded="true" />
-            <element signature="e#15979#15980#0" expanded="true" />
+            <element signature="e#5717#19624#0" expanded="true" />
+            <element signature="e#16794#18936#0" expanded="true" />
+            <element signature="e#18609#18652#0" expanded="false" />
+            <element signature="e#18935#18936#0" expanded="true" />
+            <element signature="e#19623#19624#0" expanded="true" />
+            <element signature="e#20595#22041#0" expanded="true" />
+            <element signature="e#22040#22041#0" expanded="true" />
             <element signature="method#initializeVector#0;class#Ringo#0" expanded="false" />
-            <element signature="method#sendPingPacket#0;class#Ringo#0" expanded="false" />
             <element signature="method#recievePing#0;class#Ringo#0" expanded="false" />
-            <element signature="method#broadcastRingos#0;class#Ringo#0" expanded="false" />
             <element signature="method#acceptRingos#0;class#Ringo#0" expanded="false" />
-            <element signature="method#printStats#0;class#Ringo#0" expanded="false" />
-            <element signature="method#replyToMatrix#0;class#Ringo#0" expanded="false" />
+            <element signature="method#forwardData#0;class#Ringo#0" expanded="false" />
             <element signature="method#makeIdealMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#printMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#parseCmd#0;class#Ringo#0" expanded="false" />
@@ -782,19 +781,17 @@
         <state relative-caret-position="408">
           <caret line="302" column="22" lean-forward="false" selection-start-line="302" selection-start-column="22" selection-end-line="302" selection-end-column="22" />
           <folding>
-            <element signature="e#2638#2639#0" expanded="true" />
-            <element signature="e#2696#2697#0" expanded="true" />
-            <element signature="e#5184#15980#0" expanded="true" />
-            <element signature="e#15020#15292#0" expanded="true" />
-            <element signature="e#15291#15292#0" expanded="true" />
-            <element signature="e#15979#15980#0" expanded="true" />
+            <element signature="e#5717#19624#0" expanded="true" />
+            <element signature="e#16794#18936#0" expanded="true" />
+            <element signature="e#18609#18652#0" expanded="false" />
+            <element signature="e#18935#18936#0" expanded="true" />
+            <element signature="e#19623#19624#0" expanded="true" />
+            <element signature="e#20595#22041#0" expanded="true" />
+            <element signature="e#22040#22041#0" expanded="true" />
             <element signature="method#initializeVector#0;class#Ringo#0" expanded="false" />
-            <element signature="method#sendPingPacket#0;class#Ringo#0" expanded="false" />
             <element signature="method#recievePing#0;class#Ringo#0" expanded="false" />
-            <element signature="method#broadcastRingos#0;class#Ringo#0" expanded="false" />
             <element signature="method#acceptRingos#0;class#Ringo#0" expanded="false" />
-            <element signature="method#printStats#0;class#Ringo#0" expanded="false" />
-            <element signature="method#replyToMatrix#0;class#Ringo#0" expanded="false" />
+            <element signature="method#forwardData#0;class#Ringo#0" expanded="false" />
             <element signature="method#makeIdealMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#printMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#parseCmd#0;class#Ringo#0" expanded="false" />
@@ -807,19 +804,17 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#2638#2639#0" expanded="true" />
-            <element signature="e#2696#2697#0" expanded="true" />
-            <element signature="e#5184#15980#0" expanded="true" />
-            <element signature="e#15020#15292#0" expanded="true" />
-            <element signature="e#15291#15292#0" expanded="true" />
-            <element signature="e#15979#15980#0" expanded="true" />
+            <element signature="e#5717#19624#0" expanded="true" />
+            <element signature="e#16794#18936#0" expanded="true" />
+            <element signature="e#18609#18652#0" expanded="false" />
+            <element signature="e#18935#18936#0" expanded="true" />
+            <element signature="e#19623#19624#0" expanded="true" />
+            <element signature="e#20595#22041#0" expanded="true" />
+            <element signature="e#22040#22041#0" expanded="true" />
             <element signature="method#initializeVector#0;class#Ringo#0" expanded="false" />
-            <element signature="method#sendPingPacket#0;class#Ringo#0" expanded="false" />
             <element signature="method#recievePing#0;class#Ringo#0" expanded="false" />
-            <element signature="method#broadcastRingos#0;class#Ringo#0" expanded="false" />
             <element signature="method#acceptRingos#0;class#Ringo#0" expanded="false" />
-            <element signature="method#printStats#0;class#Ringo#0" expanded="false" />
-            <element signature="method#replyToMatrix#0;class#Ringo#0" expanded="false" />
+            <element signature="method#forwardData#0;class#Ringo#0" expanded="false" />
             <element signature="method#makeIdealMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#printMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#parseCmd#0;class#Ringo#0" expanded="false" />
@@ -832,19 +827,17 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#2638#2639#0" expanded="true" />
-            <element signature="e#2696#2697#0" expanded="true" />
-            <element signature="e#5184#15980#0" expanded="true" />
-            <element signature="e#15020#15292#0" expanded="true" />
-            <element signature="e#15291#15292#0" expanded="true" />
-            <element signature="e#15979#15980#0" expanded="true" />
+            <element signature="e#5717#19624#0" expanded="true" />
+            <element signature="e#16794#18936#0" expanded="true" />
+            <element signature="e#18609#18652#0" expanded="false" />
+            <element signature="e#18935#18936#0" expanded="true" />
+            <element signature="e#19623#19624#0" expanded="true" />
+            <element signature="e#20595#22041#0" expanded="true" />
+            <element signature="e#22040#22041#0" expanded="true" />
             <element signature="method#initializeVector#0;class#Ringo#0" expanded="false" />
-            <element signature="method#sendPingPacket#0;class#Ringo#0" expanded="false" />
             <element signature="method#recievePing#0;class#Ringo#0" expanded="false" />
-            <element signature="method#broadcastRingos#0;class#Ringo#0" expanded="false" />
             <element signature="method#acceptRingos#0;class#Ringo#0" expanded="false" />
-            <element signature="method#printStats#0;class#Ringo#0" expanded="false" />
-            <element signature="method#replyToMatrix#0;class#Ringo#0" expanded="false" />
+            <element signature="method#forwardData#0;class#Ringo#0" expanded="false" />
             <element signature="method#makeIdealMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#printMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#parseCmd#0;class#Ringo#0" expanded="false" />
@@ -857,19 +850,17 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#2638#2639#0" expanded="true" />
-            <element signature="e#2696#2697#0" expanded="true" />
-            <element signature="e#5184#15980#0" expanded="true" />
-            <element signature="e#15020#15292#0" expanded="true" />
-            <element signature="e#15291#15292#0" expanded="true" />
-            <element signature="e#15979#15980#0" expanded="true" />
+            <element signature="e#5717#19624#0" expanded="true" />
+            <element signature="e#16794#18936#0" expanded="true" />
+            <element signature="e#18609#18652#0" expanded="false" />
+            <element signature="e#18935#18936#0" expanded="true" />
+            <element signature="e#19623#19624#0" expanded="true" />
+            <element signature="e#20595#22041#0" expanded="true" />
+            <element signature="e#22040#22041#0" expanded="true" />
             <element signature="method#initializeVector#0;class#Ringo#0" expanded="false" />
-            <element signature="method#sendPingPacket#0;class#Ringo#0" expanded="false" />
             <element signature="method#recievePing#0;class#Ringo#0" expanded="false" />
-            <element signature="method#broadcastRingos#0;class#Ringo#0" expanded="false" />
             <element signature="method#acceptRingos#0;class#Ringo#0" expanded="false" />
-            <element signature="method#printStats#0;class#Ringo#0" expanded="false" />
-            <element signature="method#replyToMatrix#0;class#Ringo#0" expanded="false" />
+            <element signature="method#forwardData#0;class#Ringo#0" expanded="false" />
             <element signature="method#makeIdealMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#printMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#parseCmd#0;class#Ringo#0" expanded="false" />
@@ -882,19 +873,17 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#2638#2639#0" expanded="true" />
-            <element signature="e#2696#2697#0" expanded="true" />
-            <element signature="e#5184#15980#0" expanded="true" />
-            <element signature="e#15020#15292#0" expanded="true" />
-            <element signature="e#15291#15292#0" expanded="true" />
-            <element signature="e#15979#15980#0" expanded="true" />
+            <element signature="e#5717#19624#0" expanded="true" />
+            <element signature="e#16794#18936#0" expanded="true" />
+            <element signature="e#18609#18652#0" expanded="false" />
+            <element signature="e#18935#18936#0" expanded="true" />
+            <element signature="e#19623#19624#0" expanded="true" />
+            <element signature="e#20595#22041#0" expanded="true" />
+            <element signature="e#22040#22041#0" expanded="true" />
             <element signature="method#initializeVector#0;class#Ringo#0" expanded="false" />
-            <element signature="method#sendPingPacket#0;class#Ringo#0" expanded="false" />
             <element signature="method#recievePing#0;class#Ringo#0" expanded="false" />
-            <element signature="method#broadcastRingos#0;class#Ringo#0" expanded="false" />
             <element signature="method#acceptRingos#0;class#Ringo#0" expanded="false" />
-            <element signature="method#printStats#0;class#Ringo#0" expanded="false" />
-            <element signature="method#replyToMatrix#0;class#Ringo#0" expanded="false" />
+            <element signature="method#forwardData#0;class#Ringo#0" expanded="false" />
             <element signature="method#makeIdealMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#printMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#parseCmd#0;class#Ringo#0" expanded="false" />
@@ -907,19 +896,17 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#2638#2639#0" expanded="true" />
-            <element signature="e#2696#2697#0" expanded="true" />
-            <element signature="e#5184#15980#0" expanded="true" />
-            <element signature="e#15020#15292#0" expanded="true" />
-            <element signature="e#15291#15292#0" expanded="true" />
-            <element signature="e#15979#15980#0" expanded="true" />
+            <element signature="e#5717#19624#0" expanded="true" />
+            <element signature="e#16794#18936#0" expanded="true" />
+            <element signature="e#18609#18652#0" expanded="false" />
+            <element signature="e#18935#18936#0" expanded="true" />
+            <element signature="e#19623#19624#0" expanded="true" />
+            <element signature="e#20595#22041#0" expanded="true" />
+            <element signature="e#22040#22041#0" expanded="true" />
             <element signature="method#initializeVector#0;class#Ringo#0" expanded="false" />
-            <element signature="method#sendPingPacket#0;class#Ringo#0" expanded="false" />
             <element signature="method#recievePing#0;class#Ringo#0" expanded="false" />
-            <element signature="method#broadcastRingos#0;class#Ringo#0" expanded="false" />
             <element signature="method#acceptRingos#0;class#Ringo#0" expanded="false" />
-            <element signature="method#printStats#0;class#Ringo#0" expanded="false" />
-            <element signature="method#replyToMatrix#0;class#Ringo#0" expanded="false" />
+            <element signature="method#forwardData#0;class#Ringo#0" expanded="false" />
             <element signature="method#makeIdealMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#printMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#parseCmd#0;class#Ringo#0" expanded="false" />
@@ -939,19 +926,17 @@
         <state relative-caret-position="471">
           <caret line="328" column="17" lean-forward="false" selection-start-line="328" selection-start-column="17" selection-end-line="328" selection-end-column="17" />
           <folding>
-            <element signature="e#2638#2639#0" expanded="true" />
-            <element signature="e#2696#2697#0" expanded="true" />
-            <element signature="e#5184#15980#0" expanded="true" />
-            <element signature="e#15020#15292#0" expanded="true" />
-            <element signature="e#15291#15292#0" expanded="true" />
-            <element signature="e#15979#15980#0" expanded="true" />
+            <element signature="e#5717#19624#0" expanded="true" />
+            <element signature="e#16794#18936#0" expanded="true" />
+            <element signature="e#18609#18652#0" expanded="false" />
+            <element signature="e#18935#18936#0" expanded="true" />
+            <element signature="e#19623#19624#0" expanded="true" />
+            <element signature="e#20595#22041#0" expanded="true" />
+            <element signature="e#22040#22041#0" expanded="true" />
             <element signature="method#initializeVector#0;class#Ringo#0" expanded="false" />
-            <element signature="method#sendPingPacket#0;class#Ringo#0" expanded="false" />
             <element signature="method#recievePing#0;class#Ringo#0" expanded="false" />
-            <element signature="method#broadcastRingos#0;class#Ringo#0" expanded="false" />
             <element signature="method#acceptRingos#0;class#Ringo#0" expanded="false" />
-            <element signature="method#printStats#0;class#Ringo#0" expanded="false" />
-            <element signature="method#replyToMatrix#0;class#Ringo#0" expanded="false" />
+            <element signature="method#forwardData#0;class#Ringo#0" expanded="false" />
             <element signature="method#makeIdealMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#printMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#parseCmd#0;class#Ringo#0" expanded="false" />
@@ -1002,7 +987,7 @@
         <state relative-caret-position="30">
           <caret line="3" column="116" lean-forward="false" selection-start-line="3" selection-start-column="116" selection-end-line="3" selection-end-column="116" />
           <folding>
-            <marker date="1523284947040" expanded="true" signature="1656:1662" ph="{...}" />
+            <marker date="1523542158207" expanded="true" signature="1656:1662" ph="{...}" />
           </folding>
         </state>
       </provider>
@@ -1012,40 +997,38 @@
         <state relative-caret-position="765">
           <caret line="51" column="0" lean-forward="false" selection-start-line="51" selection-start-column="0" selection-end-line="51" selection-end-column="0" />
           <folding>
-            <element signature="e#411#412#0" expanded="true" />
-            <element signature="e#435#436#0" expanded="true" />
-            <element signature="e#525#526#0" expanded="true" />
-            <element signature="e#549#550#0" expanded="true" />
-            <element signature="e#628#629#0" expanded="true" />
-            <element signature="e#655#656#0" expanded="true" />
-            <element signature="e#739#740#0" expanded="true" />
-            <element signature="e#766#767#0" expanded="true" />
-            <element signature="e#842#843#0" expanded="true" />
-            <element signature="e#866#867#0" expanded="true" />
-            <element signature="e#938#939#0" expanded="true" />
-            <element signature="e#965#966#0" expanded="true" />
+            <element signature="e#411#412#0" expanded="false" />
+            <element signature="e#435#436#0" expanded="false" />
+            <element signature="e#525#526#0" expanded="false" />
+            <element signature="e#549#550#0" expanded="false" />
+            <element signature="e#628#629#0" expanded="false" />
+            <element signature="e#655#656#0" expanded="false" />
+            <element signature="e#739#740#0" expanded="false" />
+            <element signature="e#766#767#0" expanded="false" />
+            <element signature="e#842#843#0" expanded="false" />
+            <element signature="e#866#867#0" expanded="false" />
+            <element signature="e#938#939#0" expanded="false" />
+            <element signature="e#965#966#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Ringo.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="292">
-          <caret line="346" column="38" lean-forward="false" selection-start-line="346" selection-start-column="38" selection-end-line="346" selection-end-column="38" />
+        <state relative-caret-position="768">
+          <caret line="846" column="0" lean-forward="false" selection-start-line="846" selection-start-column="0" selection-end-line="846" selection-end-column="0" />
           <folding>
-            <element signature="e#2638#2639#0" expanded="true" />
-            <element signature="e#2696#2697#0" expanded="true" />
-            <element signature="e#5184#15980#0" expanded="true" />
-            <element signature="e#15020#15292#0" expanded="true" />
-            <element signature="e#15291#15292#0" expanded="true" />
-            <element signature="e#15979#15980#0" expanded="true" />
+            <element signature="e#5717#19624#0" expanded="true" />
+            <element signature="e#16794#18936#0" expanded="true" />
+            <element signature="e#18609#18652#0" expanded="false" />
+            <element signature="e#18935#18936#0" expanded="true" />
+            <element signature="e#19623#19624#0" expanded="true" />
+            <element signature="e#20595#22041#0" expanded="true" />
+            <element signature="e#22040#22041#0" expanded="true" />
             <element signature="method#initializeVector#0;class#Ringo#0" expanded="false" />
-            <element signature="method#sendPingPacket#0;class#Ringo#0" expanded="false" />
             <element signature="method#recievePing#0;class#Ringo#0" expanded="false" />
-            <element signature="method#broadcastRingos#0;class#Ringo#0" expanded="false" />
             <element signature="method#acceptRingos#0;class#Ringo#0" expanded="false" />
-            <element signature="method#printStats#0;class#Ringo#0" expanded="false" />
-            <element signature="method#replyToMatrix#0;class#Ringo#0" expanded="false" />
+            <element signature="method#forwardData#0;class#Ringo#0" expanded="false" />
             <element signature="method#makeIdealMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#printMatrix#0;class#Ringo#0" expanded="false" />
             <element signature="method#parseCmd#0;class#Ringo#0" expanded="false" />
@@ -1058,10 +1041,10 @@
         <state relative-caret-position="2370">
           <caret line="158" column="0" lean-forward="false" selection-start-line="158" selection-start-column="0" selection-end-line="158" selection-end-column="0" />
           <folding>
-            <element signature="e#311#312#0" expanded="true" />
-            <element signature="e#347#348#0" expanded="true" />
-            <element signature="e#417#418#0" expanded="true" />
-            <element signature="e#444#445#0" expanded="true" />
+            <element signature="e#311#312#0" expanded="false" />
+            <element signature="e#347#348#0" expanded="false" />
+            <element signature="e#417#418#0" expanded="false" />
+            <element signature="e#444#445#0" expanded="false" />
           </folding>
         </state>
       </provider>

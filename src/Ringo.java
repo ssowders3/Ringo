@@ -27,7 +27,7 @@ public class Ringo {
     public static int ringosOnline = 0;
     public static String ip;
     public static String MY_IP;
-    public static boolean myNeighborOnline = false;
+    public static boolean myNeighborOnline = true;
 
     public static int ping;
     public static int RINGOID;
@@ -37,6 +37,10 @@ public class Ringo {
     public static int num_iters = 0;
     public static int numRemoves;
     final static int INF = 99999;
+
+    private static Timer timer;
+
+    private static TimerTask myTask;
 
     public static int matrixReplies;
 
@@ -307,12 +311,8 @@ public class Ringo {
                             }
                         } else if (FLAG.equals("CR")) {
                             myNeighborOnline = true;
-                            if (myNeighborOnline) {
-                                System.out.println("RINGO " + (myIdxInA + 1) + " is online.");
-                            } else {
-                                System.out.println("RINGO " + (myIdxInA + 1) + " is offline.");
-                            }
-
+                        } else if (FLAG.equals("OFF")) {
+                            System.out.println("RINGO " + firstField + " IS OFFLINE.");
                         } else {//RESERVED FOR DATA PACKETS BECAUSE WE CANNOT CONCATENATE STRINGS
                             if (!(flag.equals("R"))) {
                                 System.out.println("FORWARDING DATA");
@@ -323,6 +323,8 @@ public class Ringo {
                                 System.out.println(new String(packetInfo));
                             }
                         }
+
+
 
 
                     } catch (Exception e) {
@@ -375,12 +377,41 @@ public class Ringo {
                         //START TIMER TO CHECK ALL
                         if (knownRingos.size() == n) {
                             initializeVector();
-                            Timer timer = new Timer();
-                            TimerTask myTask = new TimerTask() {
+                            timer = new Timer();
+
+                            myTask = new TimerTask() {
                                 @Override
                                 public void run() {
-                                    myNeighborOnline = false;
                                     keepAlive();
+                                    TimerTask task2 = new TimerTask() {
+                                        @Override
+                                        public void run() {
+
+                                        }
+                                    };
+                                    timer.schedule(task2, 1000, 1000);
+
+
+                                    if (myNeighborOnline) {
+                                        //System.out.println("RINGO " + (myIdxInA + 1) + " is online.");
+                                    } else {
+                                        //System.out.println("RINGO " + (myIdxInA + 1) + " is offline.");
+                                        System.out.println("Broadcasting to remove index" + myIdxInA);
+                                        String send = "OFF " + myIdxInA;
+                                        for (Map.Entry<ringoAddr, Integer> otherRingos : knownRingos.entrySet()) {
+
+                                            ringoAddr cur = otherRingos.getKey();
+                                            try {
+                                                DatagramPacket packet = new DatagramPacket(send.getBytes(), send.getBytes().length, InetAddress.getByName(cur.getIP()) , cur.getPort());
+                                                ds.send(packet);
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+
+                                        }
+                                    }
+
+                                    myNeighborOnline = false;
 //                                    try {
 //                                        wait(1000);
 //                                    } catch (Exception e) {
@@ -390,7 +421,7 @@ public class Ringo {
                                 }
                             };
 
-                            timer.schedule(myTask, 5000, 5000);
+                            timer.schedule(myTask, 1000, 2500);
                         }
 
 
@@ -414,9 +445,8 @@ public class Ringo {
         checkForPackets.start();
 
         while (true) {
+            Timer offlineTimer = new Timer();
             Scanner scan = new Scanner(System.in);
-
-
             System.out.println("Ringo command: ");
             StringTokenizer token = new StringTokenizer(scan.nextLine());
 
@@ -425,6 +455,60 @@ public class Ringo {
             if (command.equals("offline")) {
                 int time = Integer.parseInt(token.nextToken());
                 System.out.println("Going offline for " + time + " seconds.");
+                ds.close();
+                try {
+
+                    timer.cancel();
+                    myTask.cancel();
+                    Thread.sleep(time * 1000);
+                    checkForPackets.sleep(time * 1000);
+
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                }
+                System.out.println("Coming out of sleep");
+
+                timer = new Timer();
+                myTask = new TimerTask() {
+                    @Override
+                    public void run() {
+                        keepAlive();
+                        TimerTask task2 = new TimerTask() {
+                            @Override
+                            public void run() {
+
+                            }
+                        };
+                        timer.schedule(task2, 1000, 1000);
+                        if (myNeighborOnline) {
+                            //System.out.println("RINGO " + (myIdxInA + 1) + " is online.");
+                        } else {
+                            System.out.println("Broadcasting to remove index" + myIdxInA);
+                            String send = "OFF " + myIdxInA;
+                            for (Map.Entry<ringoAddr, Integer> otherRingos : knownRingos.entrySet()) {
+
+                                ringoAddr cur = otherRingos.getKey();
+                                try {
+                                    DatagramPacket packet = new DatagramPacket(send.getBytes(), send.getBytes().length, InetAddress.getByName(cur.getIP()) , cur.getPort());
+                                    ds.send(packet);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                        }
+                        myNeighborOnline = false;
+
+                    }
+                };
+                try {
+                    ds = new DatagramSocket(PORT_NUMBER);
+                    timer.schedule(myTask, 0, 2500);
+                    System.out.println("RINGO ONLINE");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
             } else if (command.equals("send")) {
                 String filename = token.nextToken();
                 sendData(filename, 0); //SELECT WHICH PORTION OF "A" TO SEND TO.
@@ -846,7 +930,7 @@ public class Ringo {
             DatagramPacket infoPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(sendingToIP), sendingToPort);
             ds.send(infoPacket);
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
     }
