@@ -37,6 +37,8 @@ public class Ringo {
     public static int num_iters = 0;
     public static int numRemoves;
     final static int INF = 99999;
+    public static boolean removed = false;
+    public static boolean added = false;
 
     private static Timer timer;
 
@@ -45,8 +47,8 @@ public class Ringo {
     public static int matrixReplies;
 
     public static Map<ringoAddr, Integer> knownRingos;
-    public static Map<ringoAddr, Integer> matrixRingos;
-    public static Map<Integer, String[]> sendRingos;
+    //public static Map<ringoAddr, Integer> matrixRingos;
+    //public static Map<Integer, String[]> sendRingos;
 
     public static Thread checkForPackets;
     public static int myIdxInA;
@@ -257,27 +259,34 @@ public class Ringo {
                             String port = token.nextToken();
                             String type = token.nextToken();
                             int pingerTime = Math.abs(Integer.parseInt(timeStamp));
-                            matrixRingos.put(new ringoAddr(ipOfSender, RINGOID, Integer.parseInt(port.trim()), type), pingerTime);
+                            //matrixRingos.put(new ringoAddr(ipOfSender, RINGOID, Integer.parseInt(port.trim()), type), pingerTime);
                             //System.out.println("Recieved new RTT");
 
                         } else if (FLAG.equals("M")) {
                             //System.out.println("ENTERING M");
-                            matrixReplies++;
+                            //matrixReplies++;
 
                             String[] guest = new String[n + 2];
 
                             for (int i = 0; i < (n); i++) {
                                 String curNumber = token.nextToken().trim();
+                                //System.out.println(curNumber);
                                 guest[i] = curNumber;
                             }
+                            if (added) {
+                                n++;
+                            }
                             guest[n] = token.nextToken().trim();
+                            //System.out.println(guest[n]);
+                            //System.out.print(n);
                             guest[n + 1] = token.nextToken().trim();
+                            //System.out.println(guest[n+1]);
 
                             matrix[Integer.parseInt(firstField) - 1] = guest;
 
-                            if (matrixRingos.size() == n) {
-
-                            }
+//                            if (matrixRingos.size() == n) {
+//
+//                            }
 
                             //System.out.println(Arrays.deepToString(matrix));
                             //System.out.println(firstField);
@@ -313,6 +322,75 @@ public class Ringo {
                             myNeighborOnline = true;
                         } else if (FLAG.equals("OFF")) {
                             System.out.println("RINGO " + firstField + " IS OFFLINE.");
+                            //System.out.println("Clearing knownRingos");
+                            //knownRingos.clear();
+                            String[][] b = new String[matrix.length][matrix.length];
+                            for (int j = 0; j < matrix.length; j++) {
+                                b[j] = Arrays.copyOfRange(matrix[j], n, n + 2);
+                            }
+
+//                            System.out.println(" is equal to: ");
+//                            System.out.println(Arrays.deepToString(b));
+                            String[] cur = b[(Integer.parseInt(firstField))];
+                            String removeIP = cur[0];
+                            String removePort = cur[1];
+                            //System.out.println("***********************");
+                            //System.out.println(removeIP + " " + removePort);
+                            for (Map.Entry<ringoAddr, Integer> entry : knownRingos.entrySet()) {
+                                //entry.getKey();
+                                //System.out.println("key " + entry.getKey());
+                                entry.getKey().getIP();
+
+//                                System.out.println("removing " + entry.getKey().getIP());
+//                                System.out.println("removing port " + entry.getKey().getPort());
+//                                System.out.println("ip " + (entry.getKey().getIP().equals(removeIP.trim())));
+//                                System.out.println("port? " + (entry.getKey().getPort() == Integer.parseInt(removePort.trim())));
+                                if (entry.getKey().getIP().equals(removeIP.trim()) && entry.getKey().getPort() == Integer.parseInt(removePort.trim())) {
+//                                    System.out.println("IN IF");
+                                    //System.out.println("removing " + entry.getkey().getPort());
+                                    knownRingos.remove(entry.getKey());
+                                    n--;
+                                    initializeVector();
+                                    removed = true;
+                                    //matrixRingos.remove(entry.getKey());
+                                }
+                            }
+
+
+                        } else if (FLAG.equals("ON")) {
+                            System.out.println("RINGO " + firstField + " IS ONLINE.");
+                            //System.out.println("Clearing knownRingos");
+                            //knownRingos.clear();
+                            String[][] c = new String[matrix.length][matrix.length];
+                            for (int j = 0; j < matrix.length; j++) {
+                                c[j] = Arrays.copyOfRange(matrix[j], n, n + 2);
+                            }
+
+//                            System.out.println(" is equal to: ");
+//                            System.out.println(Arrays.deepToString(b));
+                            String[] cur = c[(Integer.parseInt(firstField))];
+                            String addIP = cur[0];
+                            String addPort = cur[1];
+
+                            //initializeVector();
+
+                            for (Map.Entry<ringoAddr, Integer> entry : knownRingos.entrySet()) {
+                                entry.getKey();
+                                //System.out.println("key " + entry.getKey());
+                                entry.getKey().getIP();
+
+//                                System.out.println("add " + entry.getKey().getIP());
+//                                System.out.println("add port " + entry.getKey().getPort());
+//                                System.out.println("ip " + (entry.getKey().getIP().equals(addIP.trim())));
+//                                System.out.println("port? " + (entry.getKey().getPort() == Integer.parseInt(addPort.trim())));
+                                if (entry.getKey().getIP().equals(addIP.trim()) && entry.getKey().getPort() == Integer.parseInt(addPort.trim())) {
+                                    //System.out.println("****************************");
+                                    //UNCOMMENT THIS TO SEE IT WHAT HAPPENS
+//                                    sendPingPacket();
+//                                    added = true;
+//                                    initializeVector();
+                                }
+                            }
                         } else {//RESERVED FOR DATA PACKETS BECAUSE WE CANNOT CONCATENATE STRINGS
                             if (!(flag.equals("R"))) {
                                 System.out.println("FORWARDING DATA");
@@ -394,9 +472,9 @@ public class Ringo {
 
                                     if (myNeighborOnline) {
                                         //System.out.println("RINGO " + (myIdxInA + 1) + " is online.");
-                                    } else {
+                                    } else if (!removed) {
                                         //System.out.println("RINGO " + (myIdxInA + 1) + " is offline.");
-                                        System.out.println("Broadcasting to remove index" + myIdxInA);
+                                        //System.out.println("Broadcasting to remove index" + myIdxInA);
                                         String send = "OFF " + myIdxInA;
                                         for (Map.Entry<ringoAddr, Integer> otherRingos : knownRingos.entrySet()) {
 
@@ -482,8 +560,21 @@ public class Ringo {
                         timer.schedule(task2, 1000, 1000);
                         if (myNeighborOnline) {
                             //System.out.println("RINGO " + (myIdxInA + 1) + " is online.");
+                            //System.out.println("Broadcasting to add index" + myIdxInA);
+                            String send = "ON " + myIdxInA;
+                            for (Map.Entry<ringoAddr, Integer> otherRingos : knownRingos.entrySet()) {
+
+                                ringoAddr cur = otherRingos.getKey();
+                                try {
+                                    DatagramPacket packet = new DatagramPacket(send.getBytes(), send.getBytes().length, InetAddress.getByName(cur.getIP()) , cur.getPort());
+                                    ds.send(packet);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
                         } else {
-                            System.out.println("Broadcasting to remove index" + myIdxInA);
+                            //System.out.println("Broadcasting to remove index" + myIdxInA);
                             String send = "OFF " + myIdxInA;
                             for (Map.Entry<ringoAddr, Integer> otherRingos : knownRingos.entrySet()) {
 
