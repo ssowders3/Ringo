@@ -74,7 +74,7 @@ public class Ringo {
 
         public ringoAddr(String ip, int p) {
             IP_ADDR = ip;
-            ID = p;
+            port = p;
         }
 
         public ringoAddr(String ip, int id, int p, String type) {
@@ -121,8 +121,8 @@ public class Ringo {
         @Override
         public int hashCode(){
             int hashcode = 0;
-            hashcode = IP_ADDR.hashCode()*20;
-            hashcode += port;
+            hashcode = this.IP_ADDR.hashCode();
+            hashcode += this.port;
             return hashcode;
         }
 
@@ -322,7 +322,7 @@ public class Ringo {
                         } else if (FLAG.equals("CR")) {
                             myNeighborOnline = true;
                         } else if (FLAG.equals("OFF")) {
-                            System.out.println("RINGO " + firstField + " IS OFFLINE.");
+                            //System.out.println("RINGO " + firstField + " IS OFFLINE.");
                             //System.out.println("Clearing knownRingos");
                             //knownRingos.clear();
                             String[][] b = new String[matrix.length][matrix.length];
@@ -330,41 +330,39 @@ public class Ringo {
                                 b[j] = Arrays.copyOfRange(matrix[j], n, n + 2);
                             }
 //                            System.out.println(" is equal to: ");
-                            System.out.println(Arrays.deepToString(b));
+                            //System.out.println(Arrays.deepToString(b));
                             String[] cur = b[(Integer.parseInt(firstField))];
                             String removeIP = cur[0];
                             String removePort = cur[1];
                             //System.out.println("***********************");
                             //System.out.println(removeIP + " " + removePort);
-                            for (Map.Entry<ringoAddr, Integer> entry : knownRingos.entrySet()) {
-                                //entry.getKey();
-                                //System.out.println("key " + entry.getKey());
-                                entry.getKey().getIP();
 
-//                                System.out.println("removing " + entry.getKey().getIP());
-//                                System.out.println("removing port " + entry.getKey().getPort());
-//                                System.out.println("ip " + (entry.getKey().getIP().equals(removeIP.trim())));
-//                                System.out.println("port? " + (entry.getKey().getPort() == Integer.parseInt(removePort.trim())));
-                                if (entry.getKey().getIP().equals(removeIP.trim()) && entry.getKey().getPort() == Integer.parseInt(removePort.trim())) {
-//                                    System.out.println("IN IF");
-                                    //System.out.println("removing " + entry.getkey().getPort());
-                                    int value = knownRingos.get(entry.getKey());
-                                    int myport = Integer.parseInt(removePort);
-                                    offlineRingos.put(new ringoAddr(removeIP, RINGOID, myport, entry.getKey().getType()), value);
-                                    //matrixRingos.put(new ringoAddr(ipOfSender, RINGOID, Integer.parseInt(port.trim()), type), pingerTime);
-                                    knownRingos.remove(entry.getKey());
-                                    n--;
-                                    initializeVector();
-                                    removed = true;
-                                    //matrixRingos.remove(entry.getKey());
+                            ringoAddr temp = new ringoAddr(removeIP, Integer.valueOf(removePort.trim()));
+
+                            //System.out.println("HASH OF REMOVED RINGO = " + temp.getIP().hashCode()  + " " + temp.getPort());
+
+
+                            if (PORT_NUMBER != Integer.valueOf(removePort.trim())) {
+                                if (offlineRingos.isEmpty()) {
+                                    offlineRingos.put(temp, knownRingos.remove(temp));
+                                    //System.out.println("Known Ringos is now...");
+                                    //printKnownRingos();
+                                    //System.out.println("Offline Ringos is now...");
+                                    //printOfflineRingos();
                                 }
                             }
 
 
+
+
                         } else if (FLAG.equals("ON")) {
-                            System.out.println("IP NUMBER FROM RINGO ONLINE " + firstField);
+                            //System.out.println("IP NUMBER FROM RINGO ONLINE " + firstField);
                             int addPort = Integer.parseInt(token.nextToken().trim());
-                            System.out.println("PORT NUMBER FROM RINGO ONLINE " + addPort);
+                            //System.out.println("PORT NUMBER FROM RINGO ONLINE " + addPort);
+                            ringoAddr temp = new ringoAddr(firstField, addPort);
+                            if (!offlineRingos.isEmpty()) {
+                                knownRingos.put(new ringoAddr(firstField, 0, addPort, "F"), offlineRingos.remove(temp));
+                            }
                             //System.out.println("Clearing knownRingos");
                             //knownRingos.clear();
 //                            String[][] c = new String[matrix.length][matrix.length];
@@ -496,9 +494,10 @@ public class Ringo {
                                     timer.schedule(task2, 1000, 1000);
 
 
+
                                     if (myNeighborOnline) {
                                         //System.out.println("RINGO " + (myIdxInA) + " is online.");
-                                    } else if (!removed) {
+                                    } else {
                                         //System.out.println("RINGO " + (myIdxInA) + " is offline.");
                                         //System.out.println("Broadcasting to remove index" + myIdxInA);
                                         String send = "OFF " + myIdxInA;
@@ -506,12 +505,13 @@ public class Ringo {
 
                                             ringoAddr cur = otherRingos.getKey();
                                             try {
-                                                DatagramPacket packet = new DatagramPacket(send.getBytes(), send.getBytes().length, InetAddress.getByName(cur.getIP()) , cur.getPort());
-                                                ds.send(packet);
+                                                if (offlineRingos.isEmpty()) {
+                                                    DatagramPacket packet = new DatagramPacket(send.getBytes(), send.getBytes().length, InetAddress.getByName(cur.getIP()) , cur.getPort());
+                                                    ds.send(packet);
+                                                }
                                             } catch (Exception e) {
                                                 e.printStackTrace();
                                             }
-
                                         }
                                     }
 
@@ -585,8 +585,8 @@ public class Ringo {
                         };
                         timer.schedule(task2, 1000, 1000);
                         if (myNeighborOnline) {
-                            System.out.println("RINGO " + (myIdxInA) + " is online during myNeighborOnline.");
-                            System.out.println("Broadcasting to add index" + myIdxInA);
+                            //System.out.println("RINGO " + (myIdxInA) + " is online during myNeighborOnline.");
+                            //System.out.println("Broadcasting to add index" + myIdxInA);
                             String send = "ON " + ip + " " + PORT_NUMBER;
                             for (Map.Entry<ringoAddr, Integer> otherRingos : knownRingos.entrySet()) {
 
@@ -678,16 +678,7 @@ public class Ringo {
             } else if (command.equals("show-ringos")) {
                 System.out.println("This Ringo is connected to...");
                 if (true) {
-                    for (Map.Entry<ringoAddr, Integer> otherRingos : knownRingos.entrySet()) {
-                        ringoAddr ra = otherRingos.getKey();
-                        String ip = ra.getIP();
-                        int port = ra.getPort();
-                        int id = ra.getID();
-                        //System.out.println("my ip " + ip + " my port " + port + " id " + id);
-
-                        Integer ping = otherRingos.getValue();
-                        System.out.println("Ringo @ " + ip + ":" + port + " with ping ~" + ping + " ms. with ID " + ra.getID() + " of type " + ra.getType());
-                    }
+                    printKnownRingos();
                 } else {
                     System.out.println("Connect the number of Ringos equal to N first.");
                 }
@@ -1029,7 +1020,7 @@ public class Ringo {
             }
         }
 
-        System.out.println("I AM LOCATED IN INDEX " + idx);
+        //System.out.println("I AM LOCATED IN INDEX " + idx);
         myIdxInA = idx + 1;
         if (myIdxInA == n) {
             myIdxInA = 0;
@@ -1039,8 +1030,8 @@ public class Ringo {
         byte[] sendData = send.getBytes();
 
         String sendingToIP = a[myIdxInA][0].trim();
-        System.out.println("THIS EVENTUALLY GETS FUCKED UP " + (a[myIdxInA][0]));
-        System.out.println("THIS EVENTUALLY GETS FUCKED UP " + (a[myIdxInA][1]));
+        //System.out.println("THIS EVENTUALLY GETS FUCKED UP " + (a[myIdxInA][0]));
+        //System.out.println("THIS EVENTUALLY GETS FUCKED UP " + (a[myIdxInA][1]));
         int sendingToPort = Integer.parseInt(a[myIdxInA][1]);
 
         //System.out.println("Checking to see if " + sendingToIP + ":" + sendingToPort);
@@ -1102,6 +1093,32 @@ public class Ringo {
             ds.send(dp);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void printKnownRingos() {
+        for (Map.Entry<ringoAddr, Integer> otherRingos : knownRingos.entrySet()) {
+            ringoAddr ra = otherRingos.getKey();
+            String ip = ra.getIP();
+            int port = ra.getPort();
+            int id = ra.getID();
+            //System.out.println("my ip " + ip + " my port " + port + " id " + id);
+
+            Integer ping = otherRingos.getValue();
+            System.out.println("Ringo @ " + ip + ":" + port + " with ping ~" + ping + " ms. with of type " + ra.getType());
+        }
+    }
+
+    public static void printOfflineRingos() {
+        for (Map.Entry<ringoAddr, Integer> otherRingos : offlineRingos.entrySet()) {
+            ringoAddr ra = otherRingos.getKey();
+            String ip = ra.getIP();
+            int port = ra.getPort();
+            int id = ra.getID();
+            //System.out.println("my ip " + ip + " my port " + port + " id " + id);
+
+            Integer ping = otherRingos.getValue();
+            System.out.println("Ringo @ " + ip + ":" + port + " with ping ~" + ping + " ms.");
         }
     }
 
