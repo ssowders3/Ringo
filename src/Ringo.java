@@ -144,6 +144,7 @@ public class Ringo {
         printStats();
 
         knownRingos = new HashMap<ringoAddr, Integer>();
+        offlineRingos = new HashMap<ringoAddr, Integer>();
         calculatedPing = false;
 
         matrix = new String[n][n + 2];
@@ -361,22 +362,37 @@ public class Ringo {
 
 
                         } else if (FLAG.equals("ON")) {
-                            System.out.println("RINGO " + firstField + " IS ONLINE.");
+                            System.out.println("IP NUMBER FROM RINGO ONLINE " + firstField);
+                            int addPort = Integer.parseInt(token.nextToken().trim());
+                            System.out.println("PORT NUMBER FROM RINGO ONLINE " + addPort);
                             //System.out.println("Clearing knownRingos");
                             //knownRingos.clear();
-                            String[][] c = new String[matrix.length][matrix.length];
-                            for (int j = 0; j < matrix.length; j++) {
-                                c[j] = Arrays.copyOfRange(matrix[j], n, n + 2);
-                            }
-
-//                            System.out.println(" is equal to: ");
-//                            System.out.println(Arrays.deepToString(b));
-                            String[] cur = c[(Integer.parseInt(firstField))];
-                            String addIP = cur[0];
-                            String addPort = cur[1];
-                            for (Map.Entry<ringoAddr, Integer> entry : knownRingos.entrySet()) {
-                                if (entry.getKey().getIP().equals(addIP.trim()) && entry.getKey().getPort() == Integer.parseInt(addPort.trim())) {
-                                    //offlineRingos.get()
+//                            String[][] c = new String[matrix.length][matrix.length];
+//                            for (int j = 0; j < matrix.length; j++) {
+//                                c[j] = Arrays.copyOfRange(matrix[j], n, n + 2);
+//                            }
+//
+////                            System.out.println(" is equal to: ");
+////                            System.out.println(Arrays.deepToString(b));
+//                            String[] cur = c[(Integer.parseInt(firstField))];
+//                            String addIP = cur[0];
+//                            String addPort = cur[1];
+                            for (Map.Entry<ringoAddr, Integer> entry : offlineRingos.entrySet()) {
+                                if (entry.getKey().getIP().equals(firstField.trim()) && entry.getKey().getPort() == addPort) {
+                                    int newPort = entry.getKey().getPort();
+                                    String addIP = entry.getKey().getIP();
+                                    int newID = entry.getKey().getID();
+                                    String newType = entry.getKey().getType();
+                                    int addRTT = entry.getValue();
+                                    //try {
+                                    knownRingos.put(new ringoAddr(addIP, newID, newPort, newType), addRTT);
+                                    //System.out.println("KNOWN RINGOS AFTER ADD: " + knownRingos);
+                                    //UNCOMMENT TO SEE PROBLEM
+//                                    if(entry.getKey().getPort() != PORT_NUMBER) {
+//                                        n++;
+//                                        System.out.println("INCREMENTING N, N is now: " + n);
+//                                    }
+                                    initializeVector();
 
                                 }
 
@@ -481,9 +497,9 @@ public class Ringo {
 
 
                                     if (myNeighborOnline) {
-                                        //System.out.println("RINGO " + (myIdxInA + 1) + " is online.");
+                                        //System.out.println("RINGO " + (myIdxInA) + " is online.");
                                     } else if (!removed) {
-                                        //System.out.println("RINGO " + (myIdxInA + 1) + " is offline.");
+                                        //System.out.println("RINGO " + (myIdxInA) + " is offline.");
                                         //System.out.println("Broadcasting to remove index" + myIdxInA);
                                         String send = "OFF " + myIdxInA;
                                         for (Map.Entry<ringoAddr, Integer> otherRingos : knownRingos.entrySet()) {
@@ -569,9 +585,9 @@ public class Ringo {
                         };
                         timer.schedule(task2, 1000, 1000);
                         if (myNeighborOnline) {
-                            //System.out.println("RINGO " + (myIdxInA + 1) + " is online.");
-                            //System.out.println("Broadcasting to add index" + myIdxInA);
-                            String send = "ON " + myIdxInA;
+                            System.out.println("RINGO " + (myIdxInA) + " is online during myNeighborOnline.");
+                            System.out.println("Broadcasting to add index" + myIdxInA);
+                            String send = "ON " + ip + " " + PORT_NUMBER;
                             for (Map.Entry<ringoAddr, Integer> otherRingos : knownRingos.entrySet()) {
 
                                 ringoAddr cur = otherRingos.getKey();
@@ -1013,7 +1029,7 @@ public class Ringo {
             }
         }
 
-        //System.out.println("I AM LOCATED IN INDEX " + idx);
+        System.out.println("I AM LOCATED IN INDEX " + idx);
         myIdxInA = idx + 1;
         if (myIdxInA == n) {
             myIdxInA = 0;
@@ -1023,6 +1039,8 @@ public class Ringo {
         byte[] sendData = send.getBytes();
 
         String sendingToIP = a[myIdxInA][0].trim();
+        System.out.println("THIS EVENTUALLY GETS FUCKED UP " + (a[myIdxInA][0]));
+        System.out.println("THIS EVENTUALLY GETS FUCKED UP " + (a[myIdxInA][1]));
         int sendingToPort = Integer.parseInt(a[myIdxInA][1]);
 
         //System.out.println("Checking to see if " + sendingToIP + ":" + sendingToPort);
