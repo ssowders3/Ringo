@@ -1,4 +1,5 @@
 import javax.xml.crypto.Data;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
@@ -29,6 +30,11 @@ public class Ringo {
     public static String MY_IP;
     public static boolean myNeighborOnline = true;
 
+    //MUST CHANGE TO CHANGE HOW BIG PACKETS ARE SENT
+    final static int SEND_SIZE = 4;
+
+    public static int numPacketsInRecieve;
+
     public static int ping;
     public static int RINGOID;
     public static int sequenceNum;
@@ -57,6 +63,7 @@ public class Ringo {
     public static String[][] matrix;
 
     public static int[][] intMatrix;
+    public static String[] dataRecieve;
 
     public static DatagramSocket ds;
 
@@ -297,7 +304,7 @@ public class Ringo {
                             fileLength = Long.valueOf(token.nextToken().trim());
                             numRemoves = Integer.parseInt(token.nextToken().trim());
 
-                            System.out.println("INCOMING PACKET OF TYPE " + fileExtension + " OF LENGTH " + fileLength + " WITH REMOVES AT " + numRemoves);
+                            System.out.println("Incoming Packet of type " + fileExtension + ". There will be " + fileLength + " packets.");
                             String sending = "I " + fileExtension + " " + fileLength + " " + (numRemoves + 1);
 
                             if (!(flag.equals("R"))) {
@@ -391,38 +398,65 @@ public class Ringo {
 //                                        System.out.println("INCREMENTING N, N is now: " + n);
 //                                    }
                                     initializeVector();
-
                                 }
-
                             }
-
-                            //initializeVector();
-
-//                            for (Map.Entry<ringoAddr, Integer> entry : knownRingos.entrySet()) {
-//
-//                                //System.out.println("key " + entry.getKey());
-//
-////                                System.out.println("add " + entry.getKey().getIP());
-////                                System.out.println("add port " + entry.getKey().getPort());
-////                                System.out.println("ip " + (entry.getKey().getIP().equals(addIP.trim())));
-////                                System.out.println("port? " + (entry.getKey().getPort() == Integer.parseInt(addPort.trim())));
-//                                if (entry.getKey().getIP().equals(addIP.trim()) && entry.getKey().getPort() == Integer.parseInt(addPort.trim())) {
-//                                    //System.out.println("****************************");
-//
-//                                    //UNCOMMENT THIS TO SEE IT WHAT HAPPENS
-////                                    sendPingPacket();
-////                                    added = true;
-////                                    initializeVector();
-//                                }
-//                            }
                         } else {//RESERVED FOR DATA PACKETS BECAUSE WE CANNOT CONCATENATE STRINGS
                             if (!(flag.equals("R"))) {
                                 System.out.println("FORWARDING DATA");
                                 forwardData(packetInfo, numRemoves + 1);
                             } else {
-                                System.out.println("Packet has arrived to a reciever Ringo.");
-                                System.out.println("Packet contains: ");
-                                System.out.println(new String(packetInfo));
+                                //System.out.println(packetData);
+                                System.out.println("Packet has arrived to the reciever Ringo.");
+                                //System.out.println("Packet contains: ");
+
+                                //PACKET NUMBER
+                                //System.out.println("FLAG: " + FLAG);
+                                //System.out.println("FIRST FIELD = " + firstField.trim());
+
+                                int curPacket = Integer.parseInt(FLAG.trim());
+                                String data = token.nextToken();
+                                while (token.hasMoreTokens()) {
+                                    data += " " + token.nextToken();
+                                }
+                                //System.out.println(data);
+                                if (curPacket == 0) {
+                                    numPacketsInRecieve = (int) Double.parseDouble(firstField.trim());
+                                    dataRecieve = new String[numPacketsInRecieve + 1];
+                                    if (numPacketsInRecieve == 1) {
+                                        System.out.println("FILE ARRIVED: " + data);
+                                        return;
+                                    }
+                                }
+
+                                //TOTAL NUMBER OF PACKETS
+                                System.out.println("Data: " + data);
+
+                                //DATA
+                                dataRecieve[curPacket] = data;
+                                //System.out.println("DATA RECIEVE [" + curPacket + "] = " + data);
+
+                                //ALL PACKETS RECIEVED
+                                if (Integer.parseInt(FLAG.trim()) == numPacketsInRecieve - 1) {
+                                    System.out.println("DONE");
+                                    for (int i = 0; i < numPacketsInRecieve; i++) {
+                                        if (dataRecieve[i] == null || dataRecieve[i] == "") {
+                                            //Dropped packet;
+                                            System.out.println("There was a dropped packet.");
+                                            break;
+                                        }
+                                    }
+
+                                    String concatPackets = "";
+                                    for (int i = 0; i < numPacketsInRecieve; i++) {
+                                        concatPackets += dataRecieve[i];
+                                    }
+                                    System.out.println("FILE ARRIVED: " + concatPackets);
+
+                                }
+
+
+
+                                //System.out.println(new String(packetInfo));
                             }
                         }
 
@@ -877,16 +911,16 @@ public class Ringo {
         TSPNearestNeighbor tspNearestNeighbour = new TSPNearestNeighbor();
         stack = tspNearestNeighbour.tsp(intMatrix);
 
-        System.out.println("THE CURRENT STACK IS");
-        System.out.println(stack.toString().replaceAll("\\[", "").replaceAll("]", ""));
+        //System.out.println("THE CURRENT STACK IS");
+        //System.out.println(stack.toString().replaceAll("\\[", "").replaceAll("]", ""));
 
         Queue<Integer> q = new LinkedList<>();
         while (!stack.empty()) {
             q.add(stack.pop());
         }
 
-        System.out.println("THE NEW QUEUE IS: ");
-        System.out.println(q.toString().replaceAll("\\[", "").replaceAll("]", ""));
+//        System.out.println("THE NEW QUEUE IS: ");
+  //      System.out.println(q.toString().replaceAll("\\[", "").replaceAll("]", ""));
 
         //linkedList myLinkedList = new linkedList();
         stack.push(0);
@@ -940,12 +974,40 @@ public class Ringo {
             return;
         } else {
             try {
-                String info = "I " + extension + " " + fileAsArray.length + " " + (1);
+                double numPacketsToSend = Math.ceil((double)(fileAsArray.length) / (double)(SEND_SIZE));
+                System.out.println("THERE ARE " + numPacketsToSend + " PACKETS TO SEND");
+
+                String info = "I " + extension + " " + numPacketsToSend + " " + (1);
                 byte[] infoToBytes = info.getBytes();
                 DatagramPacket infoPacket = new DatagramPacket(infoToBytes, infoToBytes.length, InetAddress.getByName(destinationIP), destinationPort);
                 ds.send(infoPacket);
-                DatagramPacket dataPacket = new DatagramPacket(fileAsArray, fileAsArray.length, InetAddress.getByName(destinationIP), destinationPort);
-                ds.send(dataPacket);
+                System.out.println("Sent Info packet");
+
+                int startingIdx = 0;
+
+                for (int byteIdx = 0; byteIdx < numPacketsToSend; byteIdx++) {
+                    System.out.println("SENDING PACKET " + byteIdx);
+                    int endingIdx = startingIdx + SEND_SIZE;
+                    String sizeInfo = "" +  + byteIdx + " " + numPacketsToSend + " ";
+                    byte[] sizeBytes = sizeInfo.getBytes();
+
+                    if (endingIdx > fileAsArray.length) {
+                        endingIdx = fileAsArray.length;
+                    }
+
+                    byte[] sending = Arrays.copyOfRange(fileAsArray, startingIdx, endingIdx);
+
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream(sizeBytes.length + fileAsArray.length);
+                    outputStream.write(sizeBytes);
+                    outputStream.write(sending);
+
+                    byte sendData[] = outputStream.toByteArray();
+
+                    DatagramPacket dataPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(destinationIP), destinationPort);
+                    ds.send(dataPacket);
+                    startingIdx += SEND_SIZE;
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
