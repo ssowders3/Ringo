@@ -59,6 +59,8 @@ public class Ringo {
     public static Thread checkForPackets;
     public static int myIdxInA;
 
+    public static int offlinePacketCount = 0;
+
     public static String[] vector;
     public static String[][] matrix;
     public static String[][] tempMatrix;
@@ -333,48 +335,50 @@ public class Ringo {
                         } else if (FLAG.equals("CR")) {
                             myNeighborOnline = true;
                         } else if (FLAG.equals("OFF")) {
-                            System.out.println("RINGO " + firstField + " IS OFFLINE.");
-                            //System.out.println("Clearing knownRingos");
-                            //knownRingos.clear();
-                            String[][] b = new String[matrix.length][matrix.length];
-                            for (int j = 0; j < matrix.length; j++) {
-                                b[j] = Arrays.copyOfRange(matrix[j], n, n + 2);
-                            }
-//                            System.out.println(" is equal to: ");
-                            //System.out.println(Arrays.deepToString(b));
-                            String[] cur = b[(Integer.parseInt(firstField))];
-                            String removeIP = cur[0];
-                            String removePort = cur[1];
-                            //System.out.println("***********************");
-                            //System.out.println(removeIP + " " + removePort);
 
-                            ringoAddr temp = new ringoAddr(removeIP, Integer.valueOf(removePort.trim()));
-
-
-                            //System.out.println("HASH OF REMOVED RINGO = " + temp.getIP().hashCode()  + " " + temp.getPort());
-
-                            if (PORT_NUMBER != Integer.valueOf(removePort.trim())) {
-                                if (offlineRingos.isEmpty()) {
-                                    offlineRingos.put(temp, knownRingos.remove(temp));
-                                    //System.out.println("Known Ringos is now...");
-                                    //printKnownRingos();
-                                    //System.out.println("Offline Ringos is now...");
-                                    printOfflineRingos();
+                            if (offlinePacketCount >= 3) {
+                                System.out.println("RINGO " + firstField + " IS OFFLINE.");
+                                //System.out.println("Clearing knownRingos");
+                                //knownRingos.clear();
+                                String[][] b = new String[matrix.length][matrix.length];
+                                for (int j = 0; j < matrix.length; j++) {
+                                    b[j] = Arrays.copyOfRange(matrix[j], n, n + 2);
                                 }
+//                            System.out.println(" is equal to: ");
+                                //System.out.println(Arrays.deepToString(b));
+                                String[] cur = b[(Integer.parseInt(firstField))];
+                                String removeIP = cur[0];
+                                String removePort = cur[1];
+                                //System.out.println("***********************");
+                                //System.out.println(removeIP + " " + removePort);
+
+                                ringoAddr temp = new ringoAddr(removeIP, Integer.valueOf(removePort.trim()));
+
+
+                                //System.out.println("HASH OF REMOVED RINGO = " + temp.getIP().hashCode()  + " " + temp.getPort());
+
+                                if (PORT_NUMBER != Integer.valueOf(removePort.trim())) {
+                                    if (offlineRingos.isEmpty()) {
+                                        offlineRingos.put(temp, knownRingos.remove(temp));
+                                        //System.out.println("Known Ringos is now...");
+                                        //printKnownRingos();
+                                        System.out.println("Offline Ringos is now...");
+                                        printOfflineRingos();
+                                    }
+                                }
+                                tempMatrix = matrix;
+                                //System.out.println("temp matrix " + Arrays.deepToString(tempMatrix));
+                                matrixMaker m = new matrixMaker(matrix, n);
+                                //System.out.println(m);
+
+                                //remove rows with the value "10" and then reprint the array
+                                matrix = m.removeRowsWithValue(Integer.parseInt(firstField), matrix);
+
+                                backOnline = true;
+                                offlinePacketCount = 0;
+                            } else {
+                                offlinePacketCount++;
                             }
-                            tempMatrix = matrix;
-                            //System.out.println("temp matrix " + Arrays.deepToString(tempMatrix));
-                            matrixMaker m = new matrixMaker(matrix, n);
-                            //System.out.println(m);
-
-                            //remove rows with the value "10" and then reprint the array
-                            matrix = m.removeRowsWithValue(Integer.parseInt(firstField), matrix);
-
-                            backOnline = true;
-
-
-
-
                         } else if (FLAG.equals("ON")) {
                             //System.out.println("IP NUMBER FROM RINGO ONLINE " + firstField);
                             //System.out.println("RINGO IS BACK ONLINE");
@@ -391,7 +395,9 @@ public class Ringo {
                             //System.out.println("PORT NUMBER FROM RINGO ONLINE " + addPort);
                             ringoAddr temp = new ringoAddr(firstField, addPort);
                             if (!offlineRingos.isEmpty()) {
+                                System.out.println("Adding back from offline Ringos.");
                                 knownRingos.put(new ringoAddr(firstField, 0, addPort, "F"), offlineRingos.remove(temp));
+                                printKnownRingos();
                             }
                             //System.out.println("Clearing knownRingos");
                             //knownRingos.clear();
@@ -423,7 +429,7 @@ public class Ringo {
                                     //initializeVector();
                                 }
                                 try {
-                                    System.out.println("hety");
+                                    //System.out.println("hety");
                                     matrix = tempMatrix;
                                     System.out.println(Arrays.deepToString(matrix));
                                 } catch (Exception e) {
@@ -624,6 +630,7 @@ public class Ringo {
                 System.out.println("Going offline for " + time + " seconds.");
                 ds.close();
                 tempMatrix = matrix;
+
                 try {
 
                     timer.cancel();
@@ -659,8 +666,11 @@ public class Ringo {
 
                                 ringoAddr cur = otherRingos.getKey();
                                 try {
-                                    DatagramPacket packet = new DatagramPacket(send.getBytes(), send.getBytes().length, InetAddress.getByName(cur.getIP()) , cur.getPort());
-                                    ds.send(packet);
+                                    if (!(cur.getPort() == PORT_NUMBER && MY_IP == cur.getIP())) {
+                                        DatagramPacket packet = new DatagramPacket(send.getBytes(), send.getBytes().length, InetAddress.getByName(cur.getIP()) , cur.getPort());
+                                        ds.send(packet);
+                                    }
+
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
@@ -990,17 +1000,21 @@ public class Ringo {
             a[j] = Arrays.copyOfRange(matrix[j], n, n + 2);
         }
 
-        System.out.println("A is equal to: ");
-        System.out.println(Arrays.deepToString(a));
+        try {
+            System.out.println("A is equal to: ");
+            System.out.println(Arrays.deepToString(a));
 
-        for (int count = 0; count < curRemoves; count++) {
-            q.remove();
+            for (int count = 0; count < curRemoves; count++) {
+                q.remove();
+            }
+
+            String[] cur = a[(n) - q.remove()];
+            destinationIP = cur[0];
+            destinationPort = Integer.parseInt(cur[1]);
+            System.out.println("SENDING PACKET TO: " + destinationIP + " : " + destinationPort);
+        } catch (NumberFormatException e) {
+            System.out.println("The recieving ringo is offline!");
         }
-
-        String[] cur = a[(n) - q.remove()];
-        destinationIP = cur[0];
-        destinationPort = Integer.parseInt(cur[1]);
-        System.out.println("SENDING PACKET TO: " + destinationIP + " : " + destinationPort);
 
 
         if (destinationIP == "") {
@@ -1043,7 +1057,7 @@ public class Ringo {
                 }
 
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println("Cannot send, Receiving Ringo is offline.");
             }
         }
     }
