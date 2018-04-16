@@ -9,6 +9,7 @@ import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 /**
  * akimpel3/903047185
@@ -31,7 +32,7 @@ public class Ringo {
     public static boolean myNeighborOnline = true;
 
     //MUST CHANGE TO CHANGE HOW BIG PACKETS ARE SENT
-    final static int SEND_SIZE = 4;
+    final static int SEND_SIZE = 1000;
 
     public static int numPacketsInRecieve;
 
@@ -43,8 +44,7 @@ public class Ringo {
     public static int num_iters = 0;
     public static int numRemoves;
     final static int INF = 99999;
-    public static boolean removed = false;
-    public static boolean added = false;
+    public static boolean backOnline = false;
 
     private static Timer timer;
 
@@ -61,6 +61,7 @@ public class Ringo {
 
     public static String[] vector;
     public static String[][] matrix;
+    public static String[][] tempMatrix;
 
     public static int[][] intMatrix;
     public static String[] dataRecieve;
@@ -274,21 +275,24 @@ public class Ringo {
                             //System.out.println("ENTERING M");
                             //matrixReplies++;
 
-                            String[] guest = new String[n + 2];
+                            String[] guest = new String[knownRingos.size() + 2];
 
-                            for (int i = 0; i < (n); i++) {
+                            for (int i = 0; i < (knownRingos.size()); i++) {
                                 String curNumber = token.nextToken().trim();
                                 //System.out.println(curNumber);
                                 guest[i] = curNumber;
                             }
-                            if (added) {
-                                n++;
-                            }
-                            guest[n] = token.nextToken().trim();
-                            //System.out.println(guest[n]);
+//                            if (added) {
+//                                n++;
+//                            }
+                            guest[knownRingos.size()] = token.nextToken().trim();
+                            //System.out.println("What am I receiving in M?" + guest[n]);
+                            //System.out.println("Size of ringos map " + knownRingos.size());
+                            //System.out.println("n " + n);
                             //System.out.print(n);
-                            guest[n + 1] = token.nextToken().trim();
-                            //System.out.println(guest[n+1]);
+                            guest[knownRingos.size() + 1] = token.nextToken().trim();
+                            //System.out.println("What am I receiving in M?" + guest[knownRingos.size()+1]);
+                            //System.out.println("What is firstfield? " + firstField);
 
                             matrix[Integer.parseInt(firstField) - 1] = guest;
 
@@ -329,7 +333,7 @@ public class Ringo {
                         } else if (FLAG.equals("CR")) {
                             myNeighborOnline = true;
                         } else if (FLAG.equals("OFF")) {
-                            //System.out.println("RINGO " + firstField + " IS OFFLINE.");
+                            System.out.println("RINGO " + firstField + " IS OFFLINE.");
                             //System.out.println("Clearing knownRingos");
                             //knownRingos.clear();
                             String[][] b = new String[matrix.length][matrix.length];
@@ -346,8 +350,8 @@ public class Ringo {
 
                             ringoAddr temp = new ringoAddr(removeIP, Integer.valueOf(removePort.trim()));
 
-                            //System.out.println("HASH OF REMOVED RINGO = " + temp.getIP().hashCode()  + " " + temp.getPort());
 
+                            //System.out.println("HASH OF REMOVED RINGO = " + temp.getIP().hashCode()  + " " + temp.getPort());
 
                             if (PORT_NUMBER != Integer.valueOf(removePort.trim())) {
                                 if (offlineRingos.isEmpty()) {
@@ -355,15 +359,34 @@ public class Ringo {
                                     //System.out.println("Known Ringos is now...");
                                     //printKnownRingos();
                                     //System.out.println("Offline Ringos is now...");
-                                    //printOfflineRingos();
+                                    printOfflineRingos();
                                 }
                             }
+                            tempMatrix = matrix;
+                            //System.out.println("temp matrix " + Arrays.deepToString(tempMatrix));
+                            matrixMaker m = new matrixMaker(matrix, n);
+                            //System.out.println(m);
+
+                            //remove rows with the value "10" and then reprint the array
+                            matrix = m.removeRowsWithValue(Integer.parseInt(firstField), matrix);
+
+                            backOnline = true;
 
 
 
 
                         } else if (FLAG.equals("ON")) {
                             //System.out.println("IP NUMBER FROM RINGO ONLINE " + firstField);
+                            //System.out.println("RINGO IS BACK ONLINE");
+//                            System.out.println("TEMP MATRIX : " + Arrays.deepToString(tempMatrix));
+//                            System.out.println("Temp matrix size = " + tempMatrix.length + " x " + tempMatrix[0].length);
+//                            System.out.println("PUTTING INTO: ++++++++");
+//                            System.out.println("MATRIX : " + Arrays.deepToString(matrix));
+//                            System.out.println("Matrix size = " + matrix.length + " x " + matrix[0].length);
+
+                            matrix = new String[n][n + 2];
+                            matrix = tempMatrix;
+                            //System.out.println(packetData);
                             int addPort = Integer.parseInt(token.nextToken().trim());
                             //System.out.println("PORT NUMBER FROM RINGO ONLINE " + addPort);
                             ringoAddr temp = new ringoAddr(firstField, addPort);
@@ -397,8 +420,16 @@ public class Ringo {
 //                                        n++;
 //                                        System.out.println("INCREMENTING N, N is now: " + n);
 //                                    }
-                                    initializeVector();
+                                    //initializeVector();
                                 }
+                                try {
+                                    System.out.println("hety");
+                                    matrix = tempMatrix;
+                                    System.out.println(Arrays.deepToString(matrix));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
                             }
                         } else {//RESERVED FOR DATA PACKETS BECAUSE WE CANNOT CONCATENATE STRINGS
                             if (!(flag.equals("R"))) {
@@ -424,7 +455,7 @@ public class Ringo {
                                     dataRecieve = new String[numPacketsInRecieve + 1];
                                     if (numPacketsInRecieve == 1) {
                                         System.out.println("FILE ARRIVED: " + data);
-                                        return;
+
                                     }
                                 }
 
@@ -453,9 +484,6 @@ public class Ringo {
                                     System.out.println("FILE ARRIVED: " + concatPackets);
 
                                 }
-
-
-
                                 //System.out.println(new String(packetInfo));
                             }
                         }
@@ -471,8 +499,9 @@ public class Ringo {
                     //System.out.println("There are currently " + knownRingos.size() + " Ringos online.");
                     if (knownRingos.size() == n && !calculatedPing) {
                         //System.out.println("sending RTTs for matrix");
+                        //System.out.println("my known ringos " + knownRingos);
                         for (Map.Entry<ringoAddr, Integer> entry : knownRingos.entrySet()) {
-                            if (num_iters >= n) {
+                            if (num_iters >= knownRingos.size()) {
                                 //System.out.println("BREAKING LOOP");
                                 break;
                             }
@@ -565,8 +594,8 @@ public class Ringo {
 
                     }
                     boolean matrixNull = false;
-                    for (int i = 0; i < n; i++) {
-                        for (int j = 0; j < n; j++){
+                    for (int i = 0; i < knownRingos.size(); i++) {
+                        for (int j = 0; j < knownRingos.size(); j++){
                             if (matrix[i][j] == null) {
                                 matrixNull = true;
                             }
@@ -594,6 +623,7 @@ public class Ringo {
                 int time = Integer.parseInt(token.nextToken());
                 System.out.println("Going offline for " + time + " seconds.");
                 ds.close();
+                tempMatrix = matrix;
                 try {
 
                     timer.cancel();
@@ -618,9 +648,12 @@ public class Ringo {
                             }
                         };
                         timer.schedule(task2, 1000, 1000);
+                        //boolean sendOnce = false;
                         if (myNeighborOnline) {
-                            //System.out.println("RINGO " + (myIdxInA) + " is online during myNeighborOnline.");
+
+                            //System.out.printlknownRingos.size()("RINGO " + (myIdxInA) + " is online during myNeighborOnline.");
                             //System.out.println("Broadcasting to add index" + myIdxInA);
+
                             String send = "ON " + ip + " " + PORT_NUMBER;
                             for (Map.Entry<ringoAddr, Integer> otherRingos : knownRingos.entrySet()) {
 
@@ -655,7 +688,7 @@ public class Ringo {
                 try {
                     ds = new DatagramSocket(PORT_NUMBER);
                     timer.schedule(myTask, 0, 2500);
-                    System.out.println("RINGO ONLINE");
+                    //System.out.println("RINGO ONLINE");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -666,13 +699,13 @@ public class Ringo {
 
             } else if (command.equals("show-matrix")) {
                 System.out.print("     ");
-                for (int l = 0; l < n; l++) {
+                for (int l = 0; l < knownRingos.size(); l++) {
                     System.out.print(l + ")     ");
                 }
                 System.out.println("");
-                for (int i = 0; i < n; i++) {
+                for (int i = 0; i < knownRingos.size(); i++) {
                     System.out.print(i + ") [");
-                    for (int j = 0; j < n; j++) {
+                    for (int j = 0; j < knownRingos.size(); j++) {
                         System.out.print(matrix[i][j] + "     ");
                     }
                     System.out.println("]");
@@ -685,10 +718,10 @@ public class Ringo {
                 System.out.println("**********************");
                 String[][] a = new String[matrix.length][];
                 for (int i = 0; i < matrix.length; i++) {
-                    a[i] = Arrays.copyOfRange(matrix[i], n, n + 2);
+                    a[i] = Arrays.copyOfRange(matrix[i], knownRingos.size(), knownRingos.size() + 2);
                 }
 
-                for (int i = 0; i < n; i++) {
+                for (int i = 0; i < knownRingos.size(); i++) {
                     System.out.println("Row/Column " + i + " refers to Ringo " + Arrays.deepToString(a[i]));
                 }
 
@@ -697,7 +730,7 @@ public class Ringo {
                 System.out.println("\nthe nodes visited are as follows");
                 TSPNearestNeighbor tspNearestNeighbour = new TSPNearestNeighbor();
                 Stack<Integer> tmpStack = new Stack<>();
-                System.out.println(intMatrix);
+                //System.out.println(intMatrix);
                 tmpStack = tspNearestNeighbour.tsp(intMatrix);
                 System.out.print(0 + "\t");
                 while (!tmpStack.isEmpty()) {
@@ -757,7 +790,7 @@ public class Ringo {
         } catch (Exception e) {
             //
         }
-        for (int j = 0; j < n; j++) {
+        for (int j = 0; j < knownRingos.size(); j++) {
             s = s + " " + vector[j];
         }
 
@@ -788,6 +821,7 @@ public class Ringo {
             }
         }
         calculatedPing = true;
+        backOnline = false;
 
 
     }
@@ -997,7 +1031,7 @@ public class Ringo {
 
                     byte[] sending = Arrays.copyOfRange(fileAsArray, startingIdx, endingIdx);
 
-                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream(sizeBytes.length + fileAsArray.length);
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     outputStream.write(sizeBytes);
                     outputStream.write(sending);
 
@@ -1031,15 +1065,30 @@ public class Ringo {
             a[j] = Arrays.copyOfRange(matrix[j], n, n + 2);
         }
 
-        for (int count = 0; count < curRemoves - 1; count++) {
+        for (int count = 0; count < curRemoves; count++) {
             q.remove();
         }
 
 
-        String[] cur = a[(n - 1) - q.remove()];
+
+        System.out.println(q.toString());
+        int curQ = q.remove();
+        System.out.println("CUR Q : " + curQ);
+        String[] cur = a[curQ];
+        System.out.println(Arrays.deepToString(a));
         String destinationIP = cur[0];
         int destinationPort = Integer.parseInt(cur[1]);
-        System.out.println("FORWARDING PACKET TO: " + destinationIP + " : " + destinationPort);
+
+        if (!(destinationIP == MY_IP && destinationPort == PORT_NUMBER)) {
+            System.out.println("SENDING TO ITSELF");
+            int newQ = q.remove();
+            System.out.println(newQ);
+            cur = a[newQ];
+            destinationIP = cur[0];
+            destinationPort = Integer.parseInt(cur[1]);
+            System.out.println("FORWARDING PACKET TO: " + destinationIP + " : " + destinationPort);
+        }
+
 
 
         if (destinationIP == "") {
@@ -1060,7 +1109,7 @@ public class Ringo {
     public static void keepAlive() {
         String[][] a = new String[matrix.length][matrix.length];
         for (int j = 0; j < matrix.length; j++) {
-            a[j] = Arrays.copyOfRange(matrix[j], n, n + 2);
+            a[j] = Arrays.copyOfRange(matrix[j], knownRingos.size(), knownRingos.size() + 2);
         }
 
         //System.out.println(Arrays.deepToString(a));
@@ -1069,7 +1118,7 @@ public class Ringo {
 //        System.out.println(PORT_NUMBER);
 
         int idx = 0;
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < knownRingos.size(); i++) {
 //            System.out.println(MY_IP.trim() + " =? " + a[i][0].trim());
 //            System.out.println(MY_IP.trim() + " =? " + a[i][0].trim());
 //
@@ -1084,7 +1133,7 @@ public class Ringo {
 
         //System.out.println("I AM LOCATED IN INDEX " + idx);
         myIdxInA = idx + 1;
-        if (myIdxInA == n) {
+        if (myIdxInA == knownRingos.size()) {
             myIdxInA = 0;
         }
 
@@ -1191,22 +1240,22 @@ public class Ringo {
     public static void makeIdealMatrix(String[][] graph, int src, boolean showOutput) {
         //TODO: Construct shortest path among all Ringos in the network.
         //System.out.println(matrix.toString());
-        int dist[] = new int[n]; // The output array. dist[i] will hold
+        int dist[] = new int[knownRingos.size()]; // The output array. dist[i] will hold
         // the shortest distance from src to i
-        int[][] newMatrix = new int[n][n];
-        intMatrix = new int[n][n];
+        int[][] newMatrix = new int[knownRingos.size()][knownRingos.size()];
+        intMatrix = new int[knownRingos.size()][knownRingos.size()];
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < knownRingos.size(); i++) {
             //System.out.print(i + ") [");
-            for (int j = 0; j < n; j++) {
+            for (int j = 0; j < knownRingos.size(); j++) {
                 //System.out.print(graph[i][j] + "     ");
                 intMatrix[i][j] = Integer.parseInt(graph[i][j]);
                 newMatrix[i][j] = intMatrix[i][j];
             }
         }
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < knownRingos.size(); i++) {
             //System.out.print(i + ") [");
-            for (int j = 0; j < n; j++) {
+            for (int j = 0; j < knownRingos.size(); j++) {
                 intMatrix[i][j] = (newMatrix[i][j] + newMatrix[j][i]) / 2;
             }
         }
@@ -1215,8 +1264,8 @@ public class Ringo {
 
     static void printMatrix(int dist[][]) {
         System.out.println("\n");
-        for (int i=0; i<n; ++i) {
-            for (int j=0; j<n; ++j) {
+        for (int i=0; i<knownRingos.size(); ++i) {
+            for (int j=0; j<knownRingos.size(); ++j) {
                 if (dist[i][j]==INF)
                     System.out.print("INF ");
                 else
@@ -1250,5 +1299,7 @@ public class Ringo {
             }
         }
     }
+
+
 }
 
