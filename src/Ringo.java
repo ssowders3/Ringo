@@ -305,17 +305,18 @@ public class Ringo {
                             //System.out.println(Arrays.deepToString(matrix));
                             //System.out.println(firstField);
                             //System.out.println(secondField);
-                        } else if (FLAG.equals("I")) { //INFORMATION PACKETS FOR DATA
+                        } else if (FLAG.equals("INFO")) { //INFORMATION PACKETS FOR DATA
+
                             fileExtension = firstField;
                             fileLength = Long.valueOf(token.nextToken().trim());
                             numRemoves = Integer.parseInt(token.nextToken().trim());
 
                             System.out.println("Incoming Packet of type " + fileExtension + ". There will be " + fileLength + " packets.");
-                            String sending = "I " + fileExtension + " " + fileLength + " " + (numRemoves + 1);
+                            String sending = "INFO " + fileExtension + " " + fileLength + " " + (numRemoves);
 
                             if (!(flag.equals("R"))) {
-                                System.out.println("FORWARDING INFO PACKET");
-                                forwardData(sending.getBytes(), numRemoves + 1);
+                                //System.out.println("FORWARDING INFO PACKET");
+                                forwardData(sending.getBytes(), numRemoves);
                             }
                         } else if (FLAG.equals("C")) {
 
@@ -337,7 +338,7 @@ public class Ringo {
                         } else if (FLAG.equals("OFF")) {
 
                             if (offlinePacketCount >= 3) {
-                                System.out.println("RINGO " + firstField + " IS OFFLINE.");
+                                //System.out.println("RINGO " + firstField + " IS OFFLINE.");
                                 //System.out.println("Clearing knownRingos");
                                 //knownRingos.clear();
                                 String[][] b = new String[matrix.length][matrix.length];
@@ -362,7 +363,7 @@ public class Ringo {
                                         offlineRingos.put(temp, knownRingos.remove(temp));
                                         //System.out.println("Known Ringos is now...");
                                         //printKnownRingos();
-                                        System.out.println("Offline Ringos is now...");
+                                        //System.out.println("Offline Ringos is now...");
                                         printOfflineRingos();
                                     }
                                 }
@@ -431,7 +432,7 @@ public class Ringo {
                                 try {
                                     //System.out.println("hety");
                                     matrix = tempMatrix;
-                                    System.out.println(Arrays.deepToString(matrix));
+                                    //System.out.println(Arrays.deepToString(matrix));
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
@@ -439,7 +440,7 @@ public class Ringo {
                             }
                         } else {//RESERVED FOR DATA PACKETS BECAUSE WE CANNOT CONCATENATE STRINGS
                             if (!(flag.equals("R"))) {
-                                System.out.println("FORWARDING DATA");
+                                //System.out.println("FORWARDING DATA");
                                 forwardData(packetInfo, numRemoves + 1);
                             } else {
                                 //System.out.println(packetData);
@@ -997,23 +998,36 @@ public class Ringo {
 
         String[][] a = new String[matrix.length][matrix.length];
         for (int j = 0; j < matrix.length; j++) {
-            a[j] = Arrays.copyOfRange(matrix[j], n, n + 2);
+            a[j] = Arrays.copyOfRange(matrix[j], knownRingos.size(), knownRingos.size() + 2);
         }
 
         try {
-            System.out.println("A is equal to: ");
-            System.out.println(Arrays.deepToString(a));
 
-            for (int count = 0; count < curRemoves; count++) {
+            //System.out.println("A is equal to: ");
+            //System.out.println(Arrays.deepToString(a));
+
+            for (int count = 0; count < curRemoves - 1; count++) {
                 q.remove();
             }
 
-            String[] cur = a[(n) - q.remove()];
+            String[] cur = a[(knownRingos.size()) - q.remove()];
+
             destinationIP = cur[0];
-            destinationPort = Integer.parseInt(cur[1]);
+            destinationPort = Integer.parseInt(cur[1].trim());
             System.out.println("SENDING PACKET TO: " + destinationIP + " : " + destinationPort);
-        } catch (NumberFormatException e) {
-            System.out.println("The recieving ringo is offline!");
+
+            if (destinationPort == PORT_NUMBER && destinationIP.equals(MY_IP)) {
+                cur = a[(knownRingos.size()) - q.remove()];
+                curRemoves += 1;
+                destinationIP = cur[0];
+                destinationPort = Integer.parseInt(cur[1].trim());
+                System.out.println("JK, SENDING PACKET TO: " + destinationIP + " : " + destinationPort);
+
+            }
+        } catch (Exception e) {
+            //e.printStackTrace();
+            System.out.println("Receiver is offline");
+
         }
 
 
@@ -1023,18 +1037,18 @@ public class Ringo {
         } else {
             try {
                 double numPacketsToSend = Math.ceil((double)(fileAsArray.length) / (double)(SEND_SIZE));
-                System.out.println("THERE ARE " + numPacketsToSend + " PACKETS TO SEND");
+                //System.out.println("THERE ARE " + numPacketsToSend + " PACKETS TO SEND");
 
-                String info = "I " + extension + " " + numPacketsToSend + " " + (1);
+                String info = "INFO " + extension + " " + numPacketsToSend + " " + curRemoves;
                 byte[] infoToBytes = info.getBytes();
                 DatagramPacket infoPacket = new DatagramPacket(infoToBytes, infoToBytes.length, InetAddress.getByName(destinationIP), destinationPort);
                 ds.send(infoPacket);
-                System.out.println("Sent Info packet");
+                //System.out.println("Sent Info packet");
 
                 int startingIdx = 0;
 
                 for (int byteIdx = 0; byteIdx < numPacketsToSend; byteIdx++) {
-                    System.out.println("SENDING PACKET " + byteIdx);
+                    //System.out.println("SENDING PACKET " + byteIdx);
                     int endingIdx = startingIdx + SEND_SIZE;
                     String sizeInfo = "" +  + byteIdx + " " + numPacketsToSend + " ";
                     byte[] sizeBytes = sizeInfo.getBytes();
@@ -1051,13 +1065,20 @@ public class Ringo {
 
                     byte sendData[] = outputStream.toByteArray();
 
-                    DatagramPacket dataPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(destinationIP), destinationPort);
-                    ds.send(dataPacket);
+                    try {
+                        DatagramPacket dataPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(destinationIP), destinationPort);
+                        ds.send(dataPacket);
+                    } catch (Exception e) {
+                        DatagramPacket dataPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(destinationIP), destinationPort);
+                        ds.send(dataPacket);
+                    }
+
                     startingIdx += SEND_SIZE;
                 }
 
             } catch (Exception e) {
-                System.out.println("Cannot send, Receiving Ringo is offline.");
+                System.out.println("Cannot send either trying to send from a forwarder or reciever ringo is offline.");
+
             }
         }
     }
@@ -1076,34 +1097,41 @@ public class Ringo {
 
         String[][] a = new String[matrix.length][matrix.length];
         for (int j = 0; j < matrix.length; j++) {
-            a[j] = Arrays.copyOfRange(matrix[j], n, n + 2);
+            a[j] = Arrays.copyOfRange(matrix[j], knownRingos.size(), knownRingos.size() + 2);
         }
 
         for (int count = 0; count < curRemoves; count++) {
-            q.remove();
+            int removed = q.remove();
+            System.out.println(removed);
         }
 
-
-
-        System.out.println(q.toString());
-        int curQ = q.remove();
-        System.out.println("CUR Q : " + curQ);
-        String[] cur = a[curQ];
         System.out.println(Arrays.deepToString(a));
-        String destinationIP = cur[0];
-        int destinationPort = Integer.parseInt(cur[1]);
-
-        if (!(destinationIP == MY_IP && destinationPort == PORT_NUMBER)) {
-            System.out.println("SENDING TO ITSELF");
-            int newQ = q.remove();
-            System.out.println(newQ);
-            cur = a[newQ];
-            destinationIP = cur[0];
-            destinationPort = Integer.parseInt(cur[1]);
-            System.out.println("FORWARDING PACKET TO: " + destinationIP + " : " + destinationPort);
+        System.out.println("MY INDEX " + (myIdxInA - 1));
+        int sendTo = 0;
+        if (myIdxInA == knownRingos.size()) {
+            sendTo = 0;
+        } else {
+            sendTo = myIdxInA;
+            System.out.println("Sending to Index " + sendTo);
         }
+        String[] neighbor = a[sendTo];
+        String destinationIP = neighbor[0];
+        int destinationPort = Integer.parseInt(neighbor[1]);
+
+        System.out.println("Sending to : " + destinationIP + " :" + destinationPort);
 
 
+        if (!(destinationIP.trim().equals(MY_IP) && destinationPort == PORT_NUMBER)) {
+            //System.out.println("SENDING TO ITSELF");
+            int newQ = q.remove();
+            //System.out.println(newQ);
+            //cur = a[newQ];
+            //destinationIP = cur[0];
+            //destinationPort = Integer.parseInt(cur[1]);
+            //System.out.println("FORWARDING PACKET TO: " + destinationIP + " : " + destinationPort);
+
+
+        }
 
         if (destinationIP == "") {
             System.out.println("No ringo could be detected as a reciever.");
@@ -1113,7 +1141,21 @@ public class Ringo {
                 DatagramPacket infoPacket = new DatagramPacket(info, info.length, InetAddress.getByName(destinationIP), destinationPort);
                 ds.send(infoPacket);
             } catch (Exception e) {
-                e.printStackTrace();
+                if (myIdxInA == knownRingos.size()) {
+                    sendTo = 1;
+                } else {
+                    sendTo = myIdxInA + 1;
+                    System.out.println("Sending to Index " + sendTo);
+                }
+                try {
+                    neighbor = a[sendTo];
+                    destinationIP = neighbor[0];
+                    destinationPort = Integer.parseInt(neighbor[1]);
+                    DatagramPacket infoPacket = new DatagramPacket(info, info.length, InetAddress.getByName(destinationIP), destinationPort);
+                    ds.send(infoPacket);
+                } catch (Exception f) {
+
+                }
             }
         }
 
